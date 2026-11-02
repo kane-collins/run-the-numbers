@@ -124,6 +124,7 @@ img, svg { max-width: 100%; }
   line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 18px;
 }
 .article-head .dek { font-size: 1.25rem; color: var(--muted); margin: 0 0 22px; max-width: 40ch; }
+.article-head .series { font-size: 0.95rem; color: var(--muted); margin: 0 0 18px; }
 .article-head .byline { font-size: 0.9rem; color: var(--muted); }
 .back-link { display: inline-block; margin-bottom: 28px; font-size: 0.9rem; color: var(--muted); text-decoration: none; }
 .back-link:hover { color: var(--accent); }
@@ -152,6 +153,10 @@ img, svg { max-width: 100%; }
   background: #f3ebdd; border-radius: 12px; color: var(--muted);
 }
 .data-note strong { color: var(--ink); }
+
+.chart-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.chart-pair .chart-panel h4 { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 4px 8px 6px; }
+@media (max-width: 640px) { .chart-pair { grid-template-columns: 1fr; } }
 
 /* ---------- Chart internals ---------- */
 svg text { font-family: var(--sans); }

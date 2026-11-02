@@ -40,12 +40,13 @@ const RTN = (() => {
       .attr('role', 'img').attr('aria-label', aria || 'Chart');
   }
 
-  function gridAndYAxis(svg, y, w, m, fmt) {
+  function gridAndYAxis(svg, y, w, m, fmt, tickValues) {
+    const axis = () => (tickValues ? d3.axisLeft(y).tickValues(tickValues) : d3.axisLeft(y).ticks(5));
     svg.append('g').attr('class', 'grid').attr('transform', `translate(${m.left},0)`)
-      .call(d3.axisLeft(y).ticks(5).tickSize(-(w - m.left - m.right)).tickFormat(''))
+      .call(axis().tickSize(-(w - m.left - m.right)).tickFormat(''))
       .call(g => g.select('.domain').remove());
     svg.append('g').attr('class', 'axis').attr('transform', `translate(${m.left},0)`)
-      .call(d3.axisLeft(y).ticks(5).tickSize(0).tickPadding(10).tickFormat(fmt || null))
+      .call(axis().tickSize(0).tickPadding(10).tickFormat(fmt || null))
       .call(g => g.select('.domain').remove());
   }
 
@@ -63,7 +64,8 @@ const RTN = (() => {
       const svg = makeSvg(el, w, h, o.aria || 'Bar chart');
       const x = d3.scaleBand().domain(data.map(d => d.label)).range([m.left, w - m.right]).padding(0.22);
       const y = d3.scaleLinear().domain([0, d3.max(data, d => d.value)]).nice().range([h - m.bottom, m.top]);
-      gridAndYAxis(svg, y, w, m);
+      const intTicks = o.integer ? d3.range(0, Math.floor(y.domain()[1]) + 1) : null;
+      gridAndYAxis(svg, y, w, m, null, intTicks);
       bottomAxis(svg, d3.axisBottom(x), h, m);
 
       const bars = svg.append('g').selectAll('rect').data(data).join('rect')
@@ -77,7 +79,7 @@ const RTN = (() => {
         .attr('y', m.top).attr('height', h - m.top - m.bottom).attr('fill', 'transparent')
         .on('pointerenter pointermove', (event, d) => {
           bars.attr('opacity', b => (b === d ? 1 : 0.35));
-          showTip(`<strong>${d.label}</strong>${d.value} ${o.unit || ''}`, event);
+          showTip(`<strong>${d.label}</strong>${d.value} ${o.unit || ''}${d.note ? '<br>' + d.note : ''}`, event);
         })
         .on('pointerleave', () => { bars.attr('opacity', 1); hideTip(); });
     });
