@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rain, Sun and Everything In Between · Run the Numbers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">Run the <span>Numbers</span></a>
+      <nav aria-label="Main">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="article-head">
+      <a class="back-link" href="index.html">← All articles</a>
+      <p class="eyebrow">Weather &amp; Climate</p>
+      <h1>Rain, Sun and Everything In Between</h1>
+      <p class="dek">Three interactive charts on how a year of weather really adds up.</p>
+      <div class="byline">By Kane · 1 Nov 2026 · 4 min read</div>
+    </div>
+
+    <div class="prose">
+      <p>We talk about the weather constantly, but rarely look at it as a whole. Laid out month by month, a year of weather has a shape, and some surprises.</p>
+      <p>Every chart below is interactive. Hover or tap to see the exact numbers.</p>
+
+      <h2>When does it actually rain?</h2>
+      <p>Start with the basics: total rainfall by month. The wettest stretch isn't the middle of the year, it's the dark end of it.</p>
+    </div>
+
+    <figure class="chart-block">
+      <h3>Average monthly rainfall</h3>
+      <p class="sub">Millimetres per month</p>
+      <div class="chart-panel"><div id="rain-bars"></div></div>
+      <figcaption>Source: placeholder data. Hover a bar for the exact value.</figcaption>
+    </figure>
+
+    <div class="pullquote"><p>Autumn and winter deliver more than half of the year's rain.</p></div>
+
+    <div class="prose">
+      <h2>Two years, side by side</h2>
+      <p>Averages hide a lot. Comparing two individual years shows how differently the same calendar can play out, with a dry spring in one and a washed-out summer in the other.</p>
+    </div>
+
+    <figure class="chart-block">
+      <h3>Rainfall: 2023 vs 2024</h3>
+      <p class="sub">Millimetres per month. Move across the chart to compare both years.</p>
+      <div class="chart-panel"><div id="rain-lines"></div></div>
+      <figcaption>Source: placeholder data.</figcaption>
+    </figure>
+
+    <div class="prose">
+      <h2>Warmer means sunnier?</h2>
+      <p>Mostly, yes. Plot each month's average temperature against its hours of sunshine and the months line up in a loose diagonal.</p>
+    </div>
+
+    <figure class="chart-block">
+      <h3>Temperature vs sunshine, by month</h3>
+      <p class="sub">Each dot is one month</p>
+      <div class="chart-panel"><div id="scatter"></div></div>
+      <figcaption>Source: placeholder data. Hover a dot to identify the month.</figcaption>
+    </figure>
+
+    <div class="prose">
+      <h2>The takeaway</h2>
+      <p>This is where the real conclusion would go, tying the charts together and saying what readers should take away.</p>
+    </div>
+
+    <div class="data-note">
+      <strong>Placeholder data.</strong> The figures in this article are illustrative only and are not real measurements. Replace them with your own sourced dataset (and credit the source in each chart caption) before publishing.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>© 2026 Run the Numbers</span>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor"/>
+        </svg>
+        Instagram
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="charts.js"></script>
+  <script>
+    // PLACEHOLDER DATA: replace with real figures.
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const rainAvg = [110, 85, 80, 65, 68, 70, 72, 88, 84, 112, 118, 125];
+    RTN.barChart(
+      document.getElementById('rain-bars'),
+      months.map((m, i) => ({ label: m, value: rainAvg[i] })),
+      { unit: 'mm', color: '#c2512f', aria: 'Bar chart of average monthly rainfall' }
+    );
+
+    RTN.lineChart(
+      document.getElementById('rain-lines'),
+      months,
+      [
+        { name: '2023', color: '#2f6f73', values: [118,72,95,55,40,98,90,102,70,130,125,140] },
+        { name: '2024', color: '#c2512f', values: [105,98,60,78,85,52,76,110,95,100,122,115] }
+      ],
+      { unit: 'mm', aria: 'Line chart comparing monthly rainfall in 2023 and 2024' }
+    );
+
+    const temp = [5, 5.5, 7, 9, 12, 14.5, 16.5, 16, 14, 11, 8, 6];
+    const sun  = [48, 70, 115, 160, 195, 185, 170, 155, 125, 90, 58, 42];
+    RTN.scatter(
+      document.getElementById('scatter'),
+      months.map((m, i) => ({ label: m, x: temp[i], y: sun[i] })),
+      { xLabel: 'Average temperature (°C)', yLabel: 'Sunshine (hours)', color: '#d29a2e',
+        aria: 'Scatter plot of average temperature against hours of sunshine by month' }
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Squeeze: Rents, Prices and Pay · Run the Numbers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">Run the <span>Numbers</span></a>
+      <nav aria-label="Main">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="article-head">
+      <a class="back-link" href="index.html">← All articles</a>
+      <p class="eyebrow">Housing &amp; Economy</p>
+      <h1>The Squeeze: Rents, Prices and Pay</h1>
+      <p class="dek">Over a decade, the cost of a roof has quietly outrun the money coming in.</p>
+      <div class="byline">By Kane · 2 Nov 2026 · 5 min read</div>
+    </div>
+
+    <div class="prose">
+      <p>Everyone has a feeling about how expensive housing has become. Feelings are hard to argue with, and harder to compare. So let's put three numbers on the same page and scroll through them together.</p>
+      <p>Every line below is indexed so that 2015 equals 100. If a line reaches 150, that thing is 50% more expensive than it was at the start.</p>
+    </div>
+
+    <section class="scrolly" aria-label="Scrolling chart">
+      <div class="figure"><div id="chart"></div></div>
+
+      <div class="steps">
+        <div class="step" data-step="0">
+          <div class="step-card">
+            <h3>Start with pay</h3>
+            <p>Wages have risen steadily, but slowly. Over ten years, the typical pay packet is up about a third.</p>
+          </div>
+        </div>
+        <div class="step" data-step="1">
+          <div class="step-card">
+            <h3>Now add house prices</h3>
+            <p>Prices started pulling away around 2020 and haven't looked back, rising far faster than the money used to buy them.</p>
+          </div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-card">
+            <h3>And rents</h3>
+            <p>Renters were hit hardest. Rents are the steepest line on the chart, and they never get a breather.</p>
+          </div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-card">
+            <h3>The squeeze</h3>
+            <p>That shaded gap between rents and wages is the squeeze: every year, a bigger share of the pay packet goes on keeping a roof overhead.</p>
+          </div>
+        </div>
+        <div class="step" data-step="4">
+          <div class="step-card">
+            <h3>Your turn</h3>
+            <p>Move your cursor over the chart to read off any year. The full picture is yours to explore.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stat-row">
+      <div class="stat"><b>+96%</b><span>Rents, 2015 to 2025</span></div>
+      <div class="stat"><b>+89%</b><span>House prices, 2015 to 2025</span></div>
+      <div class="stat"><b>+36%</b><span>Wages, 2015 to 2025</span></div>
+    </div>
+
+    <div class="prose">
+      <h2>What it means</h2>
+      <p>When one cost grows nearly three times faster than income, something has to give. Savings stretch thinner, moving becomes harder, and deposits slip further out of reach.</p>
+      <p>This is where the real article's conclusion would go, along with what the data can and can't tell us.</p>
+    </div>
+
+    <div class="data-note">
+      <strong>Placeholder data.</strong> The figures in this article are illustrative only and are not real statistics. Replace them with your own sourced dataset (and credit the source here) before publishing.
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>© 2026 Run the Numbers</span>
+      <a href="https://www.instagram.com/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor"/>
+        </svg>
+        Instagram
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="charts.js"></script>
+  <script>
+  (() => {
+    const years = d3.range(2015, 2026);
+    // Index values, 2015 = 100. PLACEHOLDER DATA: replace with real figures.
+    const series = [
+      { key: 'wages',  name: 'Wages',        color: '#2f6f73', values: [100,102,105,108,111,113,117,123,128,132,136] },
+      { key: 'prices', name: 'House prices', color: '#d29a2e', values: [100,106,114,121,127,134,152,171,176,181,189] },
+      { key: 'rents',  name: 'Rents',        color: '#c2512f', values: [100,107,115,123,129,133,141,155,170,184,196] }
+    ];
+    const steps = [
+      { show: ['wages'] },
+      { show: ['wages', 'prices'] },
+      { show: ['wages', 'prices', 'rents'] },
+      { show: ['wages', 'prices', 'rents'], focus: ['wages', 'rents'], gap: true },
+      { show: ['wages', 'prices', 'rents'] }
+    ];
+
+    const el = document.getElementById('chart');
+    let svg, x, y, m, current = 0;
+
+    const opacityFor = key => {
+      const c = steps[current];
+      if (!c.show.includes(key)) return 0;
+      if (c.focus && !c.focus.includes(key)) return 0.18;
+      return 1;
+    };
+
+    function build() {
+      const w = el.clientWidth, h = el.clientHeight;
+      if (!w || !h) return;
+      el.innerHTML = '';
+      m = { top: 20, right: w < 520 ? 74 : 100, bottom: 34, left: 40 };
+      svg = RTN.makeSvg(el, w, h, 'Line chart of wages, house prices and rents, indexed to 2015 = 100');
+      x = d3.scaleLinear().domain([2015, 2025]).range([m.left, w - m.right]);
+      y = d3.scaleLinear().domain([90, 210]).range([h - m.bottom, m.top]);
+
+      RTN.gridAndYAxis(svg, y, w, m);
+      RTN.bottomAxis(svg,
+        d3.axisBottom(x).tickValues(w < 520 ? [2015, 2020, 2025] : d3.range(2015, 2026, 2)).tickFormat(d3.format('d')),
+        h, m);
+
+      // Baseline at 100
+      svg.append('line').attr('x1', m.left).attr('x2', w - m.right).attr('y1', y(100)).attr('y2', y(100))
+        .attr('stroke', '#2a2521').attr('stroke-opacity', 0.35).attr('stroke-dasharray', '4 4');
+      svg.append('text').attr('x', m.left + 4).attr('y', y(100) - 6).attr('font-size', 11)
+        .attr('fill', '#74695e').text('2015 = 100');
+
+      // The gap between rents and wages
+      const gapData = years.map((yr, i) => ({ yr, lo: series[0].values[i], hi: series[2].values[i] }));
+      svg.append('path').attr('class', 'gap')
+        .attr('d', d3.area().x(d => x(d.yr)).y0(d => y(d.lo)).y1(d => y(d.hi)).curve(d3.curveMonotoneX)(gapData))
+        .attr('fill', '#c2512f').attr('fill-opacity', 0.16).style('opacity', 0);
+
+      const line = d3.line().x((d, i) => x(years[i])).y(d => y(d)).curve(d3.curveMonotoneX);
+      svg.append('g').selectAll('path').data(series).join('path').attr('class', 'line')
+        .attr('d', s => line(s.values)).attr('fill', 'none').attr('stroke', s => s.color)
+        .attr('stroke-width', 3).attr('stroke-linecap', 'round').style('opacity', s => opacityFor(s.key));
+
+      svg.append('g').selectAll('text').data(series).join('text').attr('class', 'lbl')
+        .attr('x', x(2025) + 8).attr('y', s => y(s.values[s.values.length - 1]) + 4)
+        .attr('fill', s => s.color).attr('font-size', 13).attr('font-weight', 600)
+        .text(s => s.name).style('opacity', s => opacityFor(s.key));
+
+      // Callout shown during the "squeeze" step
+      const note = svg.append('g').attr('class', 'note')
+        .attr('transform', `translate(${m.left + 14},${m.top + 18})`).style('opacity', 0);
+      note.append('text').attr('fill', '#c2512f').attr('font-weight', 600).attr('font-size', 14).text('By 2025: rents +96%');
+      note.append('text').attr('fill', '#2f6f73').attr('font-weight', 600).attr('font-size', 14).attr('dy', '1.5em').text('Wages +36%');
+
+      // Hover crosshair
+      const vline = svg.append('line').attr('y1', m.top).attr('y2', h - m.bottom)
+        .attr('stroke', '#2a2521').attr('stroke-opacity', 0.25).style('display', 'none');
+      const dots = svg.append('g').selectAll('circle').data(series).join('circle')
+        .attr('r', 5).attr('fill', s => s.color).attr('stroke', '#fffdf8').attr('stroke-width', 2)
+        .style('display', 'none');
+
+      svg.append('rect').attr('x', m.left).attr('y', m.top)
+        .attr('width', w - m.left - m.right).attr('height', h - m.top - m.bottom).attr('fill', 'transparent')
+        .on('pointermove', event => {
+          const [px] = d3.pointer(event);
+          const yr = Math.max(2015, Math.min(2025, Math.round(x.invert(px))));
+          const i = yr - 2015, cx = x(yr);
+          const visible = series.filter(s => steps[current].show.includes(s.key));
+          vline.attr('x1', cx).attr('x2', cx).style('display', null);
+          dots.style('display', s => (visible.includes(s) ? null : 'none'))
+              .attr('cx', cx).attr('cy', s => y(s.values[i]));
+          const rows = visible.slice().sort((a, b) => b.values[i] - a.values[i]).map(s =>
+            `<div class="row"><span><i style="background:${s.color}"></i>${s.name}</span><span>${s.values[i]}</span></div>`
+          ).join('');
+          RTN.showTip(`<strong>${yr}</strong>${rows}`, event);
+        })
+        .on('pointerleave', () => { vline.style('display', 'none'); dots.style('display', 'none'); RTN.hideTip(); });
+    }
+
+    function update(i) {
+      current = i;
+      if (!svg) return;
+      const cfg = steps[i];
+      svg.selectAll('.line').transition().duration(450).style('opacity', s => opacityFor(s.key));
+      svg.selectAll('.lbl').transition().duration(450).style('opacity', s => opacityFor(s.key));
+      svg.select('.gap').transition().duration(450).style('opacity', cfg.gap ? 1 : 0);
+      svg.select('.note').transition().duration(450).style('opacity', cfg.gap ? 1 : 0);
+    }
+
+    // Scroll steps
+    const stepEls = [...document.querySelectorAll('.step')];
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        stepEls.forEach(s => s.classList.toggle('active', s === e.target));
+        update(+e.target.dataset.step);
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+    stepEls.forEach(s => io.observe(s));
+
+    build();
+    stepEls[0].classList.add('active');
+    update(0);
+
+    let lastW = 0, lastH = 0, timer;
+    new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (el.clientWidth === lastW && el.clientHeight === lastH) return;
+        lastW = el.clientWidth; lastH = el.clientHeight;
+        build();
+      }, 100);
+    }).observe(el);
+  })();
+  </script>
+</body>
+</html>
