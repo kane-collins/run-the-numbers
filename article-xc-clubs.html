@@ -51,13 +51,14 @@
     </figure>
 
     <figure class="chart-block">
-      <h3>Titles by club</h3>
-      <p class="sub">Team championship wins, 2016 to 2025. Hover a bar for the years.</p>
+      <h3>The medal table</h3>
+      <p class="sub">Senior team medals by club, 2016 to 2025. Hover a row for the years.</p>
+      <div id="medal-legend"></div>
       <div class="chart-pair">
-        <div class="chart-panel"><h4>Women</h4><div id="titles-women"></div></div>
-        <div class="chart-panel"><h4>Men</h4><div id="titles-men"></div></div>
+        <div class="chart-panel"><h4>Women</h4><div id="medals-women"></div></div>
+        <div class="chart-panel"><h4>Men</h4><div id="medals-men"></div></div>
       </div>
-      <figcaption>Leevale’s women stand alone at the top; the men’s titles are spread across five clubs.</figcaption>
+      <figcaption>Leevale’s women stand alone at the top of the table; on the men’s side, Raheny and Clonliffe lead a more crowded field.</figcaption>
     </figure>
 
     <div class="prose">
@@ -71,16 +72,31 @@
       <p>And then there are the finishes that stay with you: the dead heat in Gowran, and the 2022 women’s race, when DCH beat Letterkenny by a single point. Women’s races are generally the tighter ones. The biggest gap between gold and silver in the women’s results was 30 points (DSD over Leevale in 2016), less than half the men’s biggest.</p>
     </div>
 
-    <!-- CHART SLOT: team points for gold, silver and bronze at the Irish National Cross Country
-         Championships, 2016 to 2025 (men and women, lower is better). Needs data. -->
+    <figure class="chart-block">
+      <h3>What it took to win, and to medal</h3>
+      <p class="sub">Team points for the gold, silver and bronze teams each year. Lower is better. Move across a chart to compare years.</p>
+      <div id="podium-legend"></div>
+      <div class="chart-pair">
+        <div class="chart-panel"><h4>Women</h4><div id="podium-women"></div></div>
+        <div class="chart-panel"><h4>Men</h4><div id="podium-men"></div></div>
+      </div>
+      <figcaption>Lower is better. Winning scores are far more volatile than they look: a gold-medal score in one year would not have made the podium in another.</figcaption>
+    </figure>
 
     <div class="prose">
       <h2>Who rose, who fell</h2>
       <p>Zoom out from the podium and the churn is hard to miss. Broadly, clubs fall into four categories: the established powers, the climbers, the fallen giants and the one-hit wonders.</p>
     </div>
 
-    <!-- CHART SLOT: finishing position by club and year for every club that has finished in the
-         top five at least once. Lower is better; no race in 2020. Needs data. -->
+    <figure class="chart-block">
+      <h3>Finishing positions, club by club</h3>
+      <p class="sub">Every club that has finished in the top five at least once. Hover a line, or a group in the key, to pick it out.</p>
+      <div class="chart-stack">
+        <div class="chart-panel"><h4>Women</h4><div id="pos-women"></div></div>
+        <div class="chart-panel"><h4>Men</h4><div id="pos-men"></div></div>
+      </div>
+      <figcaption>Clubs shown have finished in the top five at least once. Lower finishing positions indicate better performances; no race in 2020.</figcaption>
+    </figure>
 
     <div class="prose">
       <p><strong>The established powers.</strong> On the men’s side, Clonliffe are the benchmark. On the women’s side, DSD have never finished lower than fifth in the seven years they fielded a team, and DCH have been fourth or better every year since 2021. Letterkenny are the part-timers’ champions: they have fielded a team in only five of the nine years, but when they turn up they win medals, with a worst finish of fourth and a title in 2021.</p>
@@ -114,6 +130,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="charts.js"></script>
+  <script src="xc-clubs-data.js"></script>
   <script>
     // Every figure below comes from numbers stated in the article text.
     const clubs = {
@@ -197,21 +214,33 @@
         legend.append('span').html(`<i style="background:${c.color}"></i><b style="font-weight:600;color:#2a2521">${k}</b>&nbsp;${c.name}`));
     });
 
-    // ---------- Titles by club ----------
-    RTN.barChart(document.getElementById('titles-women'), [
-      { label: 'Leevale',     value: 5, note: '2017, 2018, 2019, 2024, 2025' },
-      { label: 'DCH',         value: 2, note: 'Dublin City Harriers<br>2022, 2023' },
-      { label: 'DSD',         value: 1, note: 'Dundrum South Dublin<br>2016' },
-      { label: 'Letterkenny', value: 1, note: '2021' }
-    ], { unit: 'titles', color: '#c2512f', integer: true, height: 280, aria: 'Bar chart of women’s team titles by club, 2016 to 2025' });
+    // ---------- The medal table ----------
+    const MEDALS = { gold: '#c98500', silver: '#5f7f9f', bronze: '#a0522d' };
+    RTN.legend(document.getElementById('medal-legend'), [
+      { label: 'Gold', color: MEDALS.gold }, { label: 'Silver', color: MEDALS.silver }, { label: 'Bronze', color: MEDALS.bronze }
+    ]);
+    RTN.medalBars(document.getElementById('medals-women'), XC.medals.women,
+      { colors: MEDALS, aria: 'Stacked bar chart of women’s team medals by club, 2016 to 2025' });
+    RTN.medalBars(document.getElementById('medals-men'), XC.medals.men,
+      { colors: MEDALS, aria: 'Stacked bar chart of men’s team medals by club, 2016 to 2025' });
 
-    RTN.barChart(document.getElementById('titles-men'), [
-      { label: 'Raheny',    value: 3, note: 'Raheny Shamrock<br>2016, 2017, 2018' },
-      { label: 'Clonliffe', value: 2, note: 'Clonliffe Harriers<br>2019, 2022' },
-      { label: 'Candour',   value: 2, note: 'Candour (CNDR Track)<br>2024, 2025' },
-      { label: 'DSD',       value: 1, note: 'Dundrum South Dublin<br>2021' },
-      { label: 'Kilkenny',  value: 1, note: 'Kilkenny City Harriers<br>2023, on countback' }
-    ], { unit: 'titles', color: '#2f6f73', integer: true, height: 280, aria: 'Bar chart of men’s team titles by club, 2016 to 2025' });
+    // ---------- Points for gold, silver and bronze ----------
+    const podiumSeries = sex => ['gold', 'silver', 'bronze'].map(k => ({
+      name: k[0].toUpperCase() + k.slice(1), color: MEDALS[k], values: XC.podium[sex][k]
+    }));
+    RTN.legend(document.getElementById('podium-legend'), [
+      { label: 'Gold', color: MEDALS.gold }, { label: 'Silver', color: MEDALS.silver }, { label: 'Bronze', color: MEDALS.bronze }
+    ]);
+    RTN.podiumLines(document.getElementById('podium-women'), XC.years, podiumSeries('women'),
+      { aria: 'Line chart of team points for gold, silver and bronze in the women’s race, 2016 to 2025' });
+    RTN.podiumLines(document.getElementById('podium-men'), XC.years, podiumSeries('men'),
+      { aria: 'Line chart of team points for gold, silver and bronze in the men’s race, 2016 to 2025' });
+
+    // ---------- Finishing positions ----------
+    RTN.positionLines(document.getElementById('pos-women'), XC.years, XC.positions.women, XC.categories,
+      { aria: 'Line chart of women’s finishing positions by club, 2016 to 2025' });
+    RTN.positionLines(document.getElementById('pos-men'), XC.years, XC.positions.men, XC.categories,
+      { aria: 'Line chart of men’s finishing positions by club, 2016 to 2025' });
   </script>
 </body>
 </html>

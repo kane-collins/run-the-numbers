@@ -155,8 +155,22 @@ img, svg { max-width: 100%; }
 .data-note strong { color: var(--ink); }
 
 .chart-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.chart-pair .chart-panel h4 { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 4px 8px 6px; }
+.chart-pair .chart-panel h4, .chart-stack .chart-panel h4 { font-family: var(--serif); font-size: 1.05rem; font-weight: 600; margin: 4px 8px 6px; }
 @media (max-width: 640px) { .chart-pair { grid-template-columns: 1fr; } }
+.chart-stack { display: grid; gap: 14px; }
+
+.legend-item { display: inline-flex; align-items: center; }
+.legend-item[tabindex] { cursor: pointer; border-radius: 6px; }
+.legend-item[tabindex]:hover, .legend-item[tabindex]:focus-visible { color: var(--ink); }
+
+.table-view { margin: 4px 8px 8px; font-size: 0.85rem; color: var(--muted); }
+.table-view summary { cursor: pointer; padding: 6px 0; }
+.table-view summary:hover { color: var(--ink); }
+.table-scroll { overflow-x: auto; }
+.table-view table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.table-view th, .table-view td { padding: 5px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.table-view thead th { color: var(--ink); font-weight: 600; }
+.table-view tbody th { color: var(--ink); font-weight: 500; }
 
 /* ---------- Chart internals ---------- */
 svg text { font-family: var(--sans); }
@@ -171,7 +185,7 @@ svg text { font-family: var(--sans); }
   position: fixed; z-index: 100; pointer-events: none; opacity: 0;
   background: var(--ink); color: #fffdf8; border-radius: 10px; padding: 10px 14px;
   font-size: 0.85rem; line-height: 1.5; box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.35);
-  transition: opacity .12s; max-width: 240px;
+  transition: opacity .12s; max-width: 290px;
 }
 .tooltip.visible { opacity: 1; }
 .tooltip strong { display: block; margin-bottom: 2px; font-weight: 600; }

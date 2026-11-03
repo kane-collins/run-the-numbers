@@ -12,8 +12,10 @@ A clean, simple data journalism site. Plain HTML, CSS and JavaScript (charts use
 | `charts.js` | Shared hoverable chart helpers: `barChart`, `lineChart`, `scatter` |
 | `article-squeeze.html` | Placeholder scroll-driven article |
 | `article-weather.html` | Placeholder traditional article with hover charts |
+| `article-xc-clubs.html` | First real article: Irish cross-country club results, 2016 to 2025 |
+| `xc-clubs-data.js` | Chart data for that article, generated from `club_results.csv` |
 
-All the data in the two articles is **placeholder data**. Replace it with real, sourced figures.
+The data in the two placeholder articles (`article-squeeze.html` and `article-weather.html`) is **placeholder data**. Replace it with real, sourced figures.
 
 ## Publish on GitHub Pages
 
