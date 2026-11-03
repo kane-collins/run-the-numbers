@@ -74,7 +74,7 @@
 
     <figure class="chart-block">
       <h3>What it took to win, and to medal</h3>
-      <p class="sub">Team points for the gold, silver and bronze teams each year. Lower is better. Move across a chart to compare years.</p>
+      <p class="sub">Team points for the gold, silver and bronze teams each year. Lower is better, so the best scores sit at the top. Move across a chart to compare years.</p>
       <div id="podium-legend"></div>
       <div class="chart-pair">
         <div class="chart-panel"><h4>Women</h4><div id="podium-women"></div></div>
@@ -90,7 +90,8 @@
 
     <figure class="chart-block">
       <h3>Finishing positions, club by club</h3>
-      <p class="sub">Every club that has finished in the top five at least once. Hover a line, or a group in the key, to pick it out.</p>
+      <p class="sub">Every club that has finished in the top five at least once, grouped by the stories below. Darker means a better finish. Hover a cell for the points.</p>
+      <div class="pos-scale"><span>1st</span><i></i><span>18th or lower</span><span class="pos-scale-note">Blank: no team entered</span></div>
       <div class="chart-stack">
         <div class="chart-panel"><h4>Women</h4><div id="pos-women"></div></div>
         <div class="chart-panel"><h4>Men</h4><div id="pos-men"></div></div>
@@ -152,7 +153,6 @@
       { year: 2018, women: 'LEE', men: 'RAH' },
       { year: 2019, women: 'LEE', men: 'CLO',
         womenNote: 'Winning score of 120, worse than the average bronze medal' },
-      { year: 2020, women: null, men: null },
       { year: 2021, women: 'LET', men: 'DSD',
         menNote: 'Won with 22 points, the lowest winning score in the men’s results, and by 65 points over Clonliffe, the biggest margin of the decade' },
       { year: 2022, women: 'DCH', men: 'CLO',
@@ -237,10 +237,8 @@
       { aria: 'Line chart of team points for gold, silver and bronze in the men’s race, 2016 to 2025' });
 
     // ---------- Finishing positions ----------
-    RTN.positionLines(document.getElementById('pos-women'), XC.years, XC.positions.women, XC.categories,
-      { aria: 'Line chart of women’s finishing positions by club, 2016 to 2025' });
-    RTN.positionLines(document.getElementById('pos-men'), XC.years, XC.positions.men, XC.categories,
-      { aria: 'Line chart of men’s finishing positions by club, 2016 to 2025' });
+    RTN.positionGrid(document.getElementById('pos-women'), XC.years, XC.positions.women, XC.categories);
+    RTN.positionGrid(document.getElementById('pos-men'), XC.years, XC.positions.men, XC.categories);
   </script>
 </body>
 </html>

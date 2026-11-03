@@ -185,7 +185,10 @@ const RTN = (() => {
 
   // Plain table twin of a chart, for anyone who can't or won't hover.
   function tableView(el, headers, rows) {
-    const d = d3.select(el).append('details').attr('class', 'table-view');
+    // Lives next to the chart, not inside it: charts redraw when their width changes,
+    // and a table inside would be wiped (closed) by that redraw.
+    if (el.nextElementSibling && el.nextElementSibling.classList.contains('table-view')) return;
+    const d = d3.select(el.parentNode).insert('details', () => el.nextSibling).attr('class', 'table-view');
     d.append('summary').text('View as table');
     const t = d.append('div').attr('class', 'table-scroll').append('table');
     t.append('thead').append('tr').selectAll('th').data(headers).join('th').attr('scope', 'col').text(h => h);
@@ -265,10 +268,11 @@ const RTN = (() => {
       const svg = makeSvg(el, w, h, o.aria || 'Line chart of team points by year');
       const x = d3.scalePoint().domain(years).range([m.left + 10, w - m.right - 10]);
       const maxV = d3.max(series, s => d3.max(s.values, v => (v ? v.pts : 0)));
-      const y = d3.scaleLinear().domain([0, maxV]).nice().range([h - m.bottom, m.top]);
+      // 0 at the top: lower is better, so the best scores sit highest
+      const y = d3.scaleLinear().domain([0, maxV]).nice().range([m.top, h - m.bottom]);
       gridAndYAxis(svg, y, w, m);
       bottomAxis(svg,
-        d3.axisBottom(x).tickValues(narrow ? years.filter((_, i) => i % 3 === 0) : years).tickFormat(d3.format('d')),
+        d3.axisBottom(x).tickValues(narrow ? years.filter((_, i) => i % 2 === 0) : years).tickFormat(d3.format('d')),
         h, m);
 
       years.forEach((yr, i) => {
@@ -343,7 +347,7 @@ const RTN = (() => {
         .attr('font-size', 11).attr('fill', '#74695e').text('Podium');
       gridAndYAxis(svg, y, w, m, null, [1, 5, 10, 15, 20].filter(t => t <= maxPos));
       bottomAxis(svg,
-        d3.axisBottom(x).tickValues(w < 480 ? years.filter((_, i) => i % 3 === 0) : years).tickFormat(d3.format('d')),
+        d3.axisBottom(x).tickValues(w < 480 ? years.filter((_, i) => i % 2 === 0) : years).tickFormat(d3.format('d')),
         h, m);
 
       const line = d3.line().defined(p => p != null).x((p, i) => x(years[i])).y(p => y(p));
@@ -379,6 +383,39 @@ const RTN = (() => {
     });
   }
 
+  /* ---------- Finishing positions as a shaded table: clubs down the side, years across ----------
+     clubs = [{club, full, cat, pos: [...], pts: [...]}] aligned with years; cats = [{key, label}] */
+  function positionGrid(el, years, clubs, cats) {
+    const shade = d3.scaleLinear().domain([1, 3, 8, 18]).range(['#8f2a14', '#c4553a', '#f0bfa8', '#f9ece3']).clamp(true);
+    const mean = c => d3.mean(c.pos.filter(p => p != null));
+    el.innerHTML = '';
+    const table = d3.select(el).append('div').attr('class', 'pos-grid-scroll').append('table').attr('class', 'pos-grid');
+    const head = table.append('thead').append('tr');
+    head.append('th').attr('scope', 'col').text('Club');
+    // Four-digit years on wide screens, ’16 style on phones (swapped by CSS)
+    years.forEach(yr => head.append('th').attr('scope', 'col')
+      .html(`<span class="y4">${yr}</span><span class="y2">’${String(yr).slice(2)}</span>`));
+    const body = table.append('tbody');
+    cats.forEach(cat => {
+      const group = clubs.filter(c => c.cat === cat.key).sort((a, b) => mean(a) - mean(b));
+      if (!group.length) return;
+      body.append('tr').attr('class', 'grp').append('th').attr('colspan', years.length + 1).text(cat.label);
+      group.forEach(c => {
+        const tr = body.append('tr');
+        tr.append('th').attr('scope', 'row').attr('class', 'club').text(c.club);
+        years.forEach((yr, i) => {
+          const p = c.pos[i];
+          const td = tr.append('td');
+          if (p == null) { td.attr('class', 'empty'); return; }
+          td.attr('class', p <= 3 ? 'podium' : null)
+            .style('background', shade(p)).style('color', p <= 3 ? '#fffdf8' : '#2a2521').text(p)
+            .on('pointerenter pointermove', event => showTip(`<strong>${esc(c.full)}</strong>${yr}: ${ord(p)} · ${c.pts[i]} pts`, event))
+            .on('pointerleave', hideTip);
+        });
+      });
+    });
+  }
+
   return { palette, showTip, hideTip, responsive, makeSvg, gridAndYAxis, bottomAxis, barChart, lineChart, scatter,
-           esc, legend, tableView, medalBars, podiumLines, positionLines };
+           esc, legend, tableView, medalBars, podiumLines, positionLines, positionGrid };
 })();

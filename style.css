@@ -172,6 +172,34 @@ img, svg { max-width: 100%; }
 .table-view thead th { color: var(--ink); font-weight: 600; }
 .table-view tbody th { color: var(--ink); font-weight: 500; }
 
+/* Stops a wide table from stretching its chart column (which would trigger a redraw) */
+.chart-panel { min-width: 0; }
+
+/* Finishing-positions table */
+.pos-scale { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin: 0 0 12px; }
+.pos-scale i { display: inline-block; width: 160px; height: 10px; border-radius: 5px; box-shadow: inset 0 0 0 1px var(--line);
+  background: linear-gradient(90deg, #8f2a14 0%, #c4553a 12%, #f0bfa8 41%, #f9ece3 100%); }
+.pos-scale-note { margin-left: 8px; }
+.pos-grid-scroll { overflow-x: auto; padding: 0 8px 10px; }
+.pos-grid { border-collapse: separate; border-spacing: 2px; width: 100%; font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.pos-grid th { font-weight: 500; text-align: left; color: var(--ink); padding: 0 10px 0 0; white-space: nowrap; }
+.pos-grid thead th { color: var(--muted); text-align: center; padding: 0 0 6px; }
+.pos-grid thead th:first-child { text-align: left; }
+.pos-grid tbody th.club { position: sticky; left: 0; z-index: 1; background: var(--surface); }
+.pos-grid .grp th { padding-top: 12px; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.pos-grid td { text-align: center; height: 26px; min-width: 34px; border-radius: 4px; }
+.pos-grid td.podium { font-weight: 700; }
+.pos-grid td.empty { box-shadow: inset 0 0 0 1px var(--line); }
+.pos-grid .y2 { display: none; }
+@media (max-width: 480px) {
+  .pos-grid { font-size: 0.72rem; border-spacing: 2px; }
+  .pos-grid th { padding-right: 6px; }
+  .pos-grid td { min-width: 22px; height: 24px; }
+  .pos-grid .y4 { display: none; }
+  .pos-grid .y2 { display: inline; }
+  .pos-grid-scroll { padding: 0 4px 10px; }
+}
+
 /* ---------- Chart internals ---------- */
 svg text { font-family: var(--sans); }
 .axis text { fill: var(--muted); font-size: 12px; }
