@@ -43,20 +43,14 @@
       <p>The men’s side is less a dynasty than a relay. Raheny Shamrock won the first three titles of the decade, 2016 to 2018. Then came a scramble in which Clonliffe Harriers (2019, 2022), DSD (2021) and Kilkenny (2023) each took a turn, until Candour arrived in 2024 and won again in 2025. Clonliffe are the constant through all of it: six podium finishes in seven championships since 2018, two wins and four medals, more than any other men’s club. They are still one win behind Raheny’s three.</p>
     </div>
 
-    <figure class="chart-block">
-      <h3>Who won, year by year</h3>
-      <p class="sub">Senior team champions. Hover a cell for details and to light up all of that club’s wins.</p>
-      <div class="chart-panel"><div id="champions"></div></div>
-      <figcaption>Senior team champions at the Irish National Cross Country Championships, 2016 to 2025. No race in 2020.</figcaption>
-    </figure>
 
     <figure class="chart-block">
-      <h3>The medal table</h3>
-      <p class="sub">Senior team medals by club, 2016 to 2025. Hover a row for the years.</p>
+      <h3>The medal table: every club podium finish</h3>
+      <p class="sub">One coin per medal, labelled with the year it was won. Clubs with multiple podiums are ranked first by wins.</p>
       <div id="medal-legend"></div>
       <div class="chart-pair">
-        <div class="chart-panel"><h4>Women</h4><div id="medals-women"></div></div>
         <div class="chart-panel"><h4>Men</h4><div id="medals-men"></div></div>
+        <div class="chart-panel"><h4>Women</h4><div id="medals-women"></div></div>
       </div>
       <figcaption>Leevale’s women stand alone at the top of the table; on the men’s side, Raheny and Clonliffe lead a more crowded field.</figcaption>
     </figure>
@@ -73,12 +67,12 @@
     </div>
 
     <figure class="chart-block">
-      <h3>What it took to win, and to medal</h3>
-      <p class="sub">Team points for the gold, silver and bronze teams each year. Lower is better, so the best scores sit at the top. Move across a chart to compare years.</p>
+      <h3>What does it take to win a national team medal?</h3>
+      <p class="sub">Team points at the Irish National Cross Country Championships, 2016–2025 (excluding 2020).</p>
       <div id="podium-legend"></div>
       <div class="chart-pair">
-        <div class="chart-panel"><h4>Women</h4><div id="podium-women"></div></div>
         <div class="chart-panel"><h4>Men</h4><div id="podium-men"></div></div>
+        <div class="chart-panel"><h4>Women</h4><div id="podium-women"></div></div>
       </div>
       <figcaption>Lower is better. Winning scores are far more volatile than they look: a gold-medal score in one year would not have made the podium in another.</figcaption>
     </figure>
@@ -89,12 +83,12 @@
     </div>
 
     <figure class="chart-block">
-      <h3>Finishing positions, club by club</h3>
-      <p class="sub">Every club that has finished in the top five at least once, grouped by the stories below. Darker means a better finish. Hover a cell for the points.</p>
+      <h3>The changing fortunes of Irish cross-country clubs</h3>
+      <p class="sub">Team finishing positions at the National Cross-Country Championships, 2016–2025.</p>
       <div class="pos-scale"><span>1st</span><i></i><span>18th or lower</span><span class="pos-scale-note">Blank: no team entered</span></div>
       <div class="chart-stack">
-        <div class="chart-panel"><h4>Women</h4><div id="pos-women"></div></div>
         <div class="chart-panel"><h4>Men</h4><div id="pos-men"></div></div>
+        <div class="chart-panel"><h4>Women</h4><div id="pos-women"></div></div>
       </div>
       <figcaption>Clubs shown have finished in the top five at least once. Lower finishing positions indicate better performances; no race in 2020.</figcaption>
     </figure>
@@ -133,87 +127,6 @@
   <script src="charts.js"></script>
   <script src="xc-clubs-data.js"></script>
   <script>
-    // Every figure below comes from numbers stated in the article text.
-    const clubs = {
-      LEE: { name: 'Leevale',                color: '#c2512f' },
-      DCH: { name: 'Dublin City Harriers',   color: '#2f6f73' },
-      DSD: { name: 'Dundrum South Dublin',   color: '#d29a2e' },
-      LET: { name: 'Letterkenny',            color: '#6b5b95' },
-      RAH: { name: 'Raheny Shamrock',        color: '#4f7a43' },
-      CLO: { name: 'Clonliffe Harriers',     color: '#8c4a68' },
-      CAN: { name: 'Candour (CNDR Track)',   color: '#3a342f' },
-      KCH: { name: 'Kilkenny City Harriers', color: '#9a8f80' }
-    };
-
-    const champs = [
-      { year: 2016, women: 'DSD', men: 'RAH',
-        womenNote: 'Won by 30 points over Leevale, the biggest women’s gold–silver gap of the decade' },
-      { year: 2017, women: 'LEE', men: 'RAH',
-        womenNote: 'Winning score of 35, the lowest in the women’s results' },
-      { year: 2018, women: 'LEE', men: 'RAH' },
-      { year: 2019, women: 'LEE', men: 'CLO',
-        womenNote: 'Winning score of 120, worse than the average bronze medal' },
-      { year: 2021, women: 'LET', men: 'DSD',
-        menNote: 'Won with 22 points, the lowest winning score in the men’s results, and by 65 points over Clonliffe, the biggest margin of the decade' },
-      { year: 2022, women: 'DCH', men: 'CLO',
-        womenNote: 'Beat Letterkenny by a single point',
-        menNote: 'Won with 86 points, the highest winning total in the men’s results' },
-      { year: 2023, women: 'DCH', men: 'KCH',
-        menNote: 'Level with North Belfast Harriers on 72 points; Kilkenny won on countback' },
-      { year: 2024, women: 'LEE', men: 'CAN' },
-      { year: 2025, women: 'LEE', men: 'CAN' }
-    ];
-
-    const textOn = c => (d3.lab(c).l > 56 ? '#2a2521' : '#fffdf8');
-
-    // ---------- Champions grid ----------
-    const gridEl = document.getElementById('champions');
-    RTN.responsive(gridEl, w => {
-      gridEl.innerHTML = '';
-      const narrow = w < 560;
-      const m = { top: 28, right: 4, bottom: 6, left: narrow ? 50 : 64 };
-      const cellH = narrow ? 54 : 66, gap = narrow ? 4 : 8;
-      const h = m.top + cellH * 2 + gap + m.bottom;
-      const svg = RTN.makeSvg(gridEl, w, h, 'Grid of senior team champions by year, women and men, 2016 to 2025');
-      const x = d3.scaleBand().domain(champs.map(d => d.year)).range([m.left, w - m.right]).paddingInner(narrow ? 0.12 : 0.1).paddingOuter(0);
-      const rows = [
-        { key: 'women', label: 'Women', y: m.top },
-        { key: 'men',   label: 'Men',   y: m.top + cellH + gap }
-      ];
-
-      svg.append('g').selectAll('text').data(champs).join('text')
-        .attr('x', d => x(d.year) + x.bandwidth() / 2).attr('y', m.top - 10).attr('text-anchor', 'middle')
-        .attr('class', 'axis-title').text(d => (narrow ? '’' + String(d.year).slice(2) : d.year));
-      svg.append('g').selectAll('text').data(rows).join('text')
-        .attr('x', m.left - 10).attr('y', d => d.y + cellH / 2 + 4).attr('text-anchor', 'end')
-        .attr('class', 'axis-title').text(d => d.label);
-
-      const cellData = champs.flatMap(c => rows.map(r => ({ year: c.year, row: r, club: c[r.key], note: c[r.key + 'Note'] })));
-      const cells = svg.append('g').selectAll('g').data(cellData).join('g')
-        .attr('transform', d => `translate(${x(d.year)},${d.row.y})`).style('transition', 'opacity .15s');
-
-      cells.append('rect').attr('width', x.bandwidth()).attr('height', cellH).attr('rx', 7)
-        .attr('fill', d => (d.club ? clubs[d.club].color : 'none'))
-        .attr('stroke', d => (d.club ? 'none' : '#d8cebf'))
-        .attr('stroke-dasharray', d => (d.club ? null : '4 4'));
-      cells.append('text').attr('x', x.bandwidth() / 2).attr('y', cellH / 2 + 4).attr('text-anchor', 'middle')
-        .attr('font-size', narrow ? 10 : 12).attr('font-weight', 600).attr('pointer-events', 'none')
-        .attr('fill', d => (d.club ? textOn(clubs[d.club].color) : '#74695e'))
-        .text(d => d.club || '–');
-
-      cells.on('pointerenter pointermove', (event, d) => {
-        cells.attr('opacity', c => (!d.club || c.club === d.club ? 1 : 0.3));
-        const head = `<strong>${d.year} · ${d.row.label}</strong>`;
-        RTN.showTip(d.club
-          ? head + clubs[d.club].name + (d.note ? '<br>' + d.note : '')
-          : head + 'No race held', event);
-      }).on('pointerleave', () => { cells.attr('opacity', 1); RTN.hideTip(); });
-
-      const legend = d3.select(gridEl).append('div').attr('class', 'legend').style('padding', '12px 8px 4px');
-      Object.entries(clubs).forEach(([k, c]) =>
-        legend.append('span').html(`<i style="background:${c.color}"></i><b style="font-weight:600;color:#2a2521">${k}</b>&nbsp;${c.name}`));
-    });
-
     // ---------- The medal table ----------
     const MEDALS = { gold: '#c98500', silver: '#5f7f9f', bronze: '#a0522d' };
     RTN.legend(document.getElementById('medal-legend'), [
