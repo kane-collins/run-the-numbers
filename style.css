@@ -362,23 +362,7 @@ svg text { font-family: var(--sans); }
 
 /* ---------- Responsive year labels ---------- */
 
-.pos-grid .y4 {
-  display: inline !important;
-}
 
-.pos-grid .y2 {
-  display: none !important;
-}
-
-@media (max-width: 480px) {
-  .pos-grid .y4 {
-    display: none !important;
-  }
-
-  .pos-grid .y2 {
-    display: inline !important;
-  }
-}
 /* ---------- Position scale ---------- */
 
 .pos-scale {

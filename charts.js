@@ -383,40 +383,92 @@ const RTN = (() => {
     });
   }
 
-  /* ---------- Finishing positions as a shaded table: clubs down the side, years across ----------
-     clubs = [{club, full, cat, pos: [...], pts: [...]}] aligned with years; cats = [{key, label}] */
-  function positionGrid(el, years, clubs, cats) {
-    const shade = d3.scaleLinear().domain([1, 3, 8, 18]).range(['#8f2a14', '#c4553a', '#f0bfa8', '#f9ece3']).clamp(true);
-    const mean = c => d3.mean(c.pos.filter(p => p != null));
-    el.innerHTML = '';
-    const table = d3.select(el)
-      .append('div')
-      .attr('class', 'pos-grid-scroll')
-      .append('table')
-      .attr('class', 'pos-grid');
 
-    const body = table.append('tbody');
-    cats.forEach(cat => {
-      const group = clubs.filter(c => c.cat === cat.key).sort((a, b) => mean(a) - mean(b));
-      if (!group.length) return;
-      body.append('tr').attr('class', 'grp').append('th').attr('colspan', years.length + 1).text(cat.label);
-      group.forEach(c => {
-        const tr = body.append('tr');
-        tr.append('th').attr('scope', 'row').attr('class', 'club').text(c.club);
-        years.forEach((yr, i) => {
-          const p = c.pos[i];
-          const td = tr.append('td');
-          if (p == null) { td.attr('class', 'empty'); return; }
-          td.attr('class', p <= 3 ? 'podium' : null)
-            .style('background', shade(p)).style('color', p <= 3 ? '#fffdf8' : '#2a2521').text(p)
-            .on('pointerenter pointermove', event => showTip(`<strong>${esc(c.full)}</strong>${yr}: ${ord(p)} · ${c.pts[i]} pts`, event))
-            .on('pointerleave', hideTip);
-            
+function positionGrid(el, years, clubs, cats) {
+  const shade = d3.scaleLinear()
+    .domain([1, 3, 8, 18])
+    .range(['#8f2a14', '#c4553a', '#f0bfa8', '#f9ece3'])
+    .clamp(true);
 
-        });
+  const mean = c => d3.mean(c.pos.filter(p => p != null));
+
+  // Completely clear the container before rendering
+  el.replaceChildren();
+
+  const scroll = d3.select(el)
+    .append('div')
+    .attr('class', 'pos-grid-scroll');
+
+  const table = scroll
+    .append('table')
+    .attr('class', 'pos-grid');
+
+  // Table body
+  const body = table.append('tbody');
+
+  cats.forEach(cat => {
+    const group = clubs
+      .filter(c => c.cat === cat.key)
+      .sort((a, b) => mean(a) - mean(b));
+
+    if (!group.length) return;
+
+    body.append('tr')
+      .attr('class', 'grp')
+      .append('th')
+      .attr('colspan', years.length + 1)
+      .text(cat.label);
+
+    group.forEach(c => {
+      const tr = body.append('tr');
+
+      tr.append('th')
+        .attr('scope', 'row')
+        .attr('class', 'club')
+        .text(c.club);
+
+      years.forEach((yr, i) => {
+        const p = c.pos[i];
+        const td = tr.append('td');
+
+        if (p == null) {
+          td.attr('class', 'empty');
+          return;
+        }
+
+        td.attr('class', p <= 3 ? 'podium' : null)
+          .style('background', shade(p))
+          .style('color', p <= 3 ? '#fffdf8' : '#2a2521')
+          .text(p)
+          .on('pointerenter pointermove', event =>
+            showTip(
+              `<strong>${esc(c.full)}</strong>${yr}: ${ord(p)} · ${c.pts[i]} pts`,
+              event
+            )
+          )
+          .on('pointerleave', hideTip);
       });
     });
-  }
+  });
+
+  // Single year-heading row at the bottom
+  const foot = table.append('tfoot');
+  const row = foot.append('tr');
+
+  row.append('th')
+    .attr('scope', 'row')
+    .text('Year');
+
+  years.forEach(yr => {
+    row.append('th')
+      .attr('scope', 'col')
+      .text(yr);
+  });
+}
+
+
+
+
 
   return { palette, showTip, hideTip, responsive, makeSvg, gridAndYAxis, bottomAxis, barChart, lineChart, scatter,
            esc, legend, tableView, medalBars, podiumLines, positionLines, positionGrid };
