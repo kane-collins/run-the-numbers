@@ -84,7 +84,6 @@
     <figure class="chart-block">
       <h3>The changing fortunes of Irish cross-country clubs</h3>
       <p class="sub">Team finishing positions at the National Cross-Country Championships, 2016–2025.</p>
-      <div class="pos-scale"><span>1st</span><i></i><span>18th or lower</span><span class="pos-scale-note">Blank: no team entered</span></div>
       <div class="chart-stack">
         <div class="chart-panel"><h4>Men</h4><div id="pos-men"></div></div>
         <div class="chart-panel"><h4>Women</h4><div id="pos-women"></div></div>
@@ -127,7 +126,7 @@
   <script src="xc-clubs-data.js"></script>
   <script>
     // ---------- The medal table ----------
-    const MEDALS = { gold: '#c98500', silver: '#5f7f9f', bronze: '#a0522d' };
+    const MEDALS = { gold: '#c98500', silver: '#A7A9AC', bronze: '#a0522d' };
     RTN.legend(document.getElementById('medal-legend'), [
       { label: 'Gold', color: MEDALS.gold }, { label: 'Silver', color: MEDALS.silver }, { label: 'Bronze', color: MEDALS.bronze }
     ]);

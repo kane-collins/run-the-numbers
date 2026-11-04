@@ -389,12 +389,12 @@ const RTN = (() => {
     const shade = d3.scaleLinear().domain([1, 3, 8, 18]).range(['#8f2a14', '#c4553a', '#f0bfa8', '#f9ece3']).clamp(true);
     const mean = c => d3.mean(c.pos.filter(p => p != null));
     el.innerHTML = '';
-    const table = d3.select(el).append('div').attr('class', 'pos-grid-scroll').append('table').attr('class', 'pos-grid');
-    const head = table.append('thead').append('tr');
-    head.append('th').attr('scope', 'col').text('Club');
-    // Four-digit years on wide screens, ’16 style on phones (swapped by CSS)
-    years.forEach(yr => head.append('th').attr('scope', 'col')
-      .html(`<span class="y4">${yr}</span><span class="y2">’${String(yr).slice(2)}</span>`));
+    const table = d3.select(el)
+      .append('div')
+      .attr('class', 'pos-grid-scroll')
+      .append('table')
+      .attr('class', 'pos-grid');
+
     const body = table.append('tbody');
     cats.forEach(cat => {
       const group = clubs.filter(c => c.cat === cat.key).sort((a, b) => mean(a) - mean(b));
@@ -411,6 +411,19 @@ const RTN = (() => {
             .style('background', shade(p)).style('color', p <= 3 ? '#fffdf8' : '#2a2521').text(p)
             .on('pointerenter pointermove', event => showTip(`<strong>${esc(c.full)}</strong>${yr}: ${ord(p)} · ${c.pts[i]} pts`, event))
             .on('pointerleave', hideTip);
+            
+    // Year headings at the bottom of the table
+        const foot = table.append('tfoot').append('tr');
+
+        foot.append('th')
+          .attr('scope', 'row')
+          .text('Year');
+
+        years.forEach(yr => {
+          foot.append('th')
+            .attr('scope', 'col')
+            .text(yr);
+        });
         });
       });
     });
