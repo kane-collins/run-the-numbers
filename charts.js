@@ -412,18 +412,7 @@ const RTN = (() => {
             .on('pointerenter pointermove', event => showTip(`<strong>${esc(c.full)}</strong>${yr}: ${ord(p)} · ${c.pts[i]} pts`, event))
             .on('pointerleave', hideTip);
             
-    // Year headings at the bottom of the table
-        const foot = table.append('tfoot').append('tr');
 
-        foot.append('th')
-          .attr('scope', 'row')
-          .text('Year');
-
-        years.forEach(yr => {
-          foot.append('th')
-            .attr('scope', 'col')
-            .text(yr);
-        });
         });
       });
     });
