@@ -359,6 +359,10 @@ svg text { font-family: var(--sans); }
 .pos-grid tbody tr:last-child td {
   border-bottom: none;
 }
+@media (max-width: 640px) {
+  .pos-grid {
+    min-width: 620px;
+  }
 
 /* ---------- Responsive year labels ---------- */
 
@@ -408,10 +412,7 @@ svg text { font-family: var(--sans); }
   margin-left: auto;
 }
 
-@media (max-width: 640px) {
-  .pos-grid {
-    min-width: 620px;
-  }
+
 
   .pos-scale {
     flex-wrap: wrap;
