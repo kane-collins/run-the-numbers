@@ -56,34 +56,6 @@ const RTN = (() => {
       .call(g => g.select('.domain').attr('stroke', '#d8cebf'));
   }
 
-  /* ---------- Bar chart: data = [{label, value}] ---------- */
-  function barChart(el, data, o = {}) {
-    responsive(el, w => {
-      el.innerHTML = '';
-      const h = o.height || 340, m = { top: 12, right: 8, bottom: 32, left: 44 };
-      const svg = makeSvg(el, w, h, o.aria || 'Bar chart');
-      const x = d3.scaleBand().domain(data.map(d => d.label)).range([m.left, w - m.right]).padding(0.22);
-      const y = d3.scaleLinear().domain([0, d3.max(data, d => d.value)]).nice().range([h - m.bottom, m.top]);
-      const intTicks = o.integer ? d3.range(0, Math.floor(y.domain()[1]) + 1) : null;
-      gridAndYAxis(svg, y, w, m, null, intTicks);
-      bottomAxis(svg, d3.axisBottom(x), h, m);
-
-      const bars = svg.append('g').selectAll('rect').data(data).join('rect')
-        .attr('x', d => x(d.label)).attr('width', x.bandwidth())
-        .attr('y', d => y(d.value)).attr('height', d => y(0) - y(d.value))
-        .attr('rx', 3).attr('fill', o.color || palette[0]).style('transition', 'opacity .15s');
-
-      // Full-height invisible hit areas make hovering easy.
-      svg.append('g').selectAll('rect').data(data).join('rect')
-        .attr('x', d => x(d.label) - x.step() * 0.11).attr('width', x.step())
-        .attr('y', m.top).attr('height', h - m.top - m.bottom).attr('fill', 'transparent')
-        .on('pointerenter pointermove', (event, d) => {
-          bars.attr('opacity', b => (b === d ? 1 : 0.35));
-          showTip(`<strong>${d.label}</strong>${d.value} ${o.unit || ''}${d.note ? '<br>' + d.note : ''}`, event);
-        })
-        .on('pointerleave', () => { bars.attr('opacity', 1); hideTip(); });
-    });
-  }
 
   /* ---------- Line chart with crosshair tooltip ----------
      labels = ['Jan', ...], series = [{name, color?, values: [...]}] */
@@ -133,36 +105,6 @@ const RTN = (() => {
   }
 
   /* ---------- Scatter: data = [{label, x, y}] ---------- */
-  function scatter(el, data, o = {}) {
-    responsive(el, w => {
-      el.innerHTML = '';
-      const h = o.height || 360, m = { top: 14, right: 24, bottom: 50, left: 54 };
-      const svg = makeSvg(el, w, h, o.aria || 'Scatter plot');
-      const x = d3.scaleLinear().domain(d3.extent(data, d => d.x)).nice().range([m.left + 6, w - m.right]);
-      const y = d3.scaleLinear().domain([0, d3.max(data, d => d.y)]).nice().range([h - m.bottom, m.top]);
-      gridAndYAxis(svg, y, w, m);
-      bottomAxis(svg, d3.axisBottom(x).ticks(6), h, m);
-
-      svg.append('text').attr('class', 'axis-title').attr('x', (m.left + w - m.right) / 2)
-        .attr('y', h - 8).attr('text-anchor', 'middle').text(o.xLabel || '');
-      svg.append('text').attr('class', 'axis-title').attr('transform', 'rotate(-90)')
-        .attr('x', -(m.top + h - m.bottom) / 2).attr('y', 14).attr('text-anchor', 'middle').text(o.yLabel || '');
-
-      svg.append('g').selectAll('text').data(data).join('text')
-        .attr('x', d => x(d.x) + 11).attr('y', d => y(d.y) + 4)
-        .attr('fill', '#74695e').attr('font-size', 11).text(d => d.label);
-
-      const dots = svg.append('g').selectAll('circle').data(data).join('circle')
-        .attr('cx', d => x(d.x)).attr('cy', d => y(d.y)).attr('r', 6.5)
-        .attr('fill', o.color || palette[1]).attr('fill-opacity', 0.85)
-        .attr('stroke', '#fffdf8').attr('stroke-width', 2).style('transition', 'r .12s');
-
-      dots.on('pointerenter pointermove', function (event, d) {
-        d3.select(this).attr('r', 10);
-        showTip(`<strong>${d.label}</strong>${o.xLabel}: ${d.x}<br>${o.yLabel}: ${d.y}`, event);
-      }).on('pointerleave', function () { d3.select(this).attr('r', 6.5); hideTip(); });
-    });
-  }
 
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const ord = n => { const v = n % 100, s = ['th', 'st', 'nd', 'rd']; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
@@ -315,74 +257,6 @@ const RTN = (() => {
     });
   }
 
-  /* ---------- Finishing position by club and year (1 = top) ----------
-     clubs = [{club, full, cat, pos: [...], pts: [...]}] aligned with years; cats = [{key, label, color}] */
-  function positionLines(el, years, clubs, cats, o = {}) {
-    const catBy = Object.fromEntries(cats.map(c => [c.key, c]));
-    const ordered = clubs.slice().sort((a, b) => (a.cat === 'other' ? 0 : 1) - (b.cat === 'other' ? 0 : 1));
-    responsive(el, w => {
-      el.innerHTML = '';
-      let hoverClub = null, hoverCat = null, lines, dots;
-      const dim = c => (hoverClub ? c !== hoverClub : hoverCat ? c.cat !== hoverCat : false);
-      const paint = () => {
-        lines.attr('stroke-opacity', c => (dim(c) ? 0.08 : (c.cat === 'other' && !hoverClub && !hoverCat ? 0.6 : 0.95)))
-          .attr('stroke-width', c => (c === hoverClub ? 3.5 : 2));
-        dots.attr('opacity', d => (dim(d.c) ? 0.08 : 1));
-      };
-      legend(el, cats.map(c => ({ key: c.key, label: c.label, color: c.color })), {
-        onHover: it => { hoverCat = it ? it.key : null; hoverClub = null; paint(); }
-      });
-
-      const maxPos = d3.max(clubs, c => d3.max(c.pos.filter(p => p != null)));
-      const h = o.height || (w < 480 ? 400 : 440);
-      const m = { top: 12, right: 14, bottom: 30, left: 36 };
-      const svg = makeSvg(el, w, h, o.aria || 'Finishing positions by club');
-      const x = d3.scalePoint().domain(years).range([m.left + 10, w - m.right - 10]);
-      const y = d3.scaleLinear().domain([0.5, maxPos + 0.5]).range([m.top, h - m.bottom]);
-
-      svg.append('rect').attr('x', m.left).attr('width', w - m.left - m.right)
-        .attr('y', y(0.5)).attr('height', y(3.5) - y(0.5)).attr('fill', '#d9a000').attr('fill-opacity', 0.1);
-      // 2020 has no data, so the label sits in that gap where nothing can cover it
-      svg.append('text').attr('x', x(2020)).attr('y', y(0.5) + 13).attr('text-anchor', 'middle')
-        .attr('font-size', 11).attr('fill', '#74695e').text('Podium');
-      gridAndYAxis(svg, y, w, m, null, [1, 5, 10, 15, 20].filter(t => t <= maxPos));
-      bottomAxis(svg,
-        d3.axisBottom(x).tickValues(w < 480 ? years.filter((_, i) => i % 2 === 0) : years).tickFormat(d3.format('d')),
-        h, m);
-
-      const line = d3.line().defined(p => p != null).x((p, i) => x(years[i])).y(p => y(p));
-      lines = svg.append('g').selectAll('path').data(ordered).join('path')
-        .attr('d', c => line(c.pos)).attr('fill', 'none').attr('stroke', c => catBy[c.cat].color)
-        .attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round');
-      const pdata = ordered.flatMap(c => c.pos.map((p, i) => (p == null ? null : { c, i, p })).filter(Boolean));
-      dots = svg.append('g').selectAll('circle').data(pdata).join('circle')
-        .attr('cx', d => x(years[d.i])).attr('cy', d => y(d.p)).attr('r', 4)
-        .attr('fill', d => catBy[d.c.cat].color).attr('stroke', '#fffdf8').attr('stroke-width', 2);
-      paint();
-
-      // Hit layer: wide invisible strokes and 20px dots, so nobody has to land on a 2px line.
-      const info = (c, i) => `<strong>${esc(c.full)}</strong>${esc(catBy[c.cat].label)}<br>${years[i]}: ${ord(c.pos[i])} · ${c.pts[i]} pts`;
-      const enter = (event, c, i) => { hoverClub = c; hoverCat = null; paint(); showTip(info(c, i), event); };
-      const leave = () => { hoverClub = null; paint(); hideTip(); };
-      svg.append('g').selectAll('path').data(ordered).join('path')
-        .attr('d', c => line(c.pos)).attr('fill', 'none').attr('stroke', 'transparent').attr('stroke-width', 14)
-        .on('pointerenter pointermove', (event, c) => {
-          const [px] = d3.pointer(event);
-          let best = -1, bd = Infinity;
-          c.pos.forEach((p, i) => { const dx = Math.abs(x(years[i]) - px); if (p != null && dx < bd) { bd = dx; best = i; } });
-          enter(event, c, best);
-        })
-        .on('pointerleave', leave);
-      svg.append('g').selectAll('circle').data(pdata).join('circle')
-        .attr('cx', d => x(years[d.i])).attr('cy', d => y(d.p)).attr('r', 10).attr('fill', 'transparent')
-        .on('pointerenter pointermove', (event, d) => enter(event, d.c, d.i))
-        .on('pointerleave', leave);
-
-      tableView(el, ['Club', 'Group', ...years],
-        clubs.map(c => [c.full, catBy[c.cat].label, ...c.pos.map(p => (p == null ? '–' : p))]));
-    });
-  }
-
 
 function positionGrid(el, years, clubs, cats) {
   const shade = d3.scaleLinear()
@@ -470,6 +344,6 @@ function positionGrid(el, years, clubs, cats) {
 
 
 
-  return { palette, showTip, hideTip, responsive, makeSvg, gridAndYAxis, bottomAxis, barChart, lineChart, scatter,
-           esc, legend, tableView, medalBars, podiumLines, positionLines, positionGrid };
+  return { palette, showTip, hideTip, responsive, makeSvg, gridAndYAxis, bottomAxis, lineChart, 
+  esc, legend, tableView, medalBars, podiumLines, positionGrid };
 })();
