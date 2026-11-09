@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A decade in the mud: Irish cross-country, 2016–2025 (Part 2) · Run the Numbers</title>
+  <meta name="description" content="There are many different paths to the top, but consistent excellence is astonishingly difficult to achieve">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .chart-image-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      padding: 8px;
+    }
+    .chart-image-wrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .article-main { padding-bottom: 12px; }
+    .article-head .dek { max-width: 48ch; }
+    .prose h2 { scroll-margin-top: 84px; }
+    @media (max-width: 640px) {
+      .article-head { padding-top: 52px; }
+      .chart-block { margin: 2.1em auto; }
+      .chart-image-wrap { padding: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html">Run the <span>Numbers</span></a>
+      <nav aria-label="Main">
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="article-main">
+    <div class="article-head">
+      <a class="back-link" href="index.html">← All articles</a>
+      <p class="eyebrow">Athletics</p>
+      <h1>A decade in the mud: Irish cross-country, 2016–2025 (part 2)</h1>
+      <p class="dek">There are many different paths to the top, but consistent excellence is astonishingly difficult to achieve</p>
+      <p class="series">Part two of a two-part look at the Irish national cross-country championships. Last time, the clubs; this time, the individuals.</p>
+      <div class="byline">By Kane Collins</div>
+    </div>
+
+    <div class="prose"><p>In part one, we explored the clubs at the Irish National Cross Country Championships, and celebrated the virtues of teamwork, camaraderie and the extraordinary lengths people will go to for their teammates. Today, however, readers can rest assured that there will be no such sentimentality. We're taking a cold, hard, individualistic look at the quest to become Ireland's greatest cross-country runner.</p></div>
+    <div class="prose"><p>Each November, the championships bring many of the country's best distance runners together to fight for supremacy. They'll do so again on the 22nd of November in Abbotstown. Predictions are a perilous business, and generally far more trouble than they're worth, so I am not going to try to help you outwit the bookmakers. But that doesn't mean we can't look back at previous results and see what they tell us about the people who have made it to the top.</p></div>
+    <div class="prose"><p>What does it take to win? How many athletes manage to stay there? Does success on the track translate to success in the mud? Who are the biggest improvers, and who are the ones who keep turning up year after year?</p></div>
+    <div class="prose"><p>At the end of it all, we will conclusively demonstrate, beyond any doubt, who Ireland's greatest cross-country runner of the last decade is. (Lol. Obviously not. But hopefully we'll uncover a few interesting things along the way.)</p></div>
+    <div class="prose"><p>And if you're interested in how all this data was assembled, there's a note at the end.</p></div>
+    <div class="prose"><h2>Winning is difficult…</h2></div>
+    <div class="prose"><p>Let's start with the obvious: winning a national medal is really, really hard. Across the decade, there have been 19 different male medal winners, with no repeat gold medal winner, and 14 female medal winners, including two athletes who have won more than once: Fiona Everard and Shona Heaslip. Only four athletes have managed to collect three medals over the period: Cormac Dalton, Michelle Finn, Ciara Mageean and Danielle Donegan.</p></div>
+    <div class="prose"><p>Even getting close to the podium more than once is a considerable achievement. Efrem Gidey is the only athlete to have finished fourth on multiple occasions, in 2022 and 2024. There's a particular cruelty to that position: close enough to see the medals, but with nothing to show for it.</p></div>
+
+    <figure class="chart-block">
+      <h3>The medal table: every individual podium finish</h3>
+      <p class="sub">One coin per medal, labelled with the year it was won. Athletes with multiple podiums are ranked first by wins. Hover or tap a medal for details.</p>
+      <div id="indiv-medal-legend"></div>
+      <div class="chart-pair indiv-medal-pair">
+        <div class="chart-panel"><h4>Men</h4><div id="indiv-medals-men"></div></div>
+        <div class="chart-panel"><h4>Women</h4><div id="indiv-medals-women"></div></div>
+      </div>
+      <figcaption>Individual podium finishes at the Irish National Cross Country Championships, 2016–2025. Each dot represents one medal.</figcaption>
+    </figure>
+    <div class="prose"><p>Winning is one thing; winning convincingly is another. The most dominant victory of the decade came from Fionnuala McCormack in 2019, when she finished 1 minute and 41 seconds ahead of Mary Mulhare. At the other extreme, seven championships have been decided by five seconds or less. On average, the winning margin in the women's race has been considerably larger than in the men's: 23 seconds compared with just seven.</p></div>
+
+    <figure class="chart-block">
+      <h3>From photo finishes to procession</h3>
+      <p class="sub">Winning margin over second place in every championship, largest to smallest.</p>
+      <div id="margin-legend"></div>
+      <div id="margin-chart"></div>
+
+      <figcaption>The chart shows how much separated each champion from the runner-up.</figcaption>
+    </figure>
+    <div class="prose"><p>The differences don't disappear when we look further down the field. In the men's race, the gaps between the winner and the athletes finishing fifth, 10th, 20th and 40th have remained remarkably consistent over time. That's particularly striking given that the race is now only around three-quarters of the length it was a few years ago. The women's race has been much more variable: the gap between first and 40th has ranged from roughly three to seven minutes.</p></div>
+    <div class="prose"><p>So winning is difficult, and the margins can be tiny. But a medal, or even a victory, only tells us what happened on one particular day. What about the athletes who keep producing good performances, year after year?</p></div>
+
+    <figure class="chart-block">
+      <h3>How deep is the field?</h3>
+      <p class="sub">Time behind the winner for the 5th, 10th, 20th and 40th place finishers.</p>
+      <div id="depth-legend"></div>
+      <div id="depth-chart"></div>
+      <figcaption>Gaps are shown in minutes; the men’s races are comparatively consistent, while the women’s races show greater variation.</figcaption>
+    </figure>
+    <div class="prose"><h2>…but sustained excellence is even harder</h2></div>
+    <div class="prose"><p>There are plenty of ways to define a successful running career. Medal counts are an obvious starting point, but they don't tell the whole story. To get a better sense of who has been consistently excellent, I've looked at the average finishing position of every athlete with at least four appearances at the championships.</p></div>
+    <div class="prose"><p>On the women's side, Ciara Mageean, Michelle Finn and Annmarie McGlynn stand out among the leading performers. For the men, Brian Fay, Keelan Kilrehill and Darragh McElhinney are the names at the top. Mageean has the best average finishing position of anyone in the analysis, an extraordinary 3.5 across four races.</p></div>
+    <div class="prose"><p>But perhaps the most impressive example of consistency belongs to Efrem Gidey. Across four appearances, his worst finish was seventh and his best was fourth. That's a remarkably narrow range. While some athletes have produced spectacular individual performances alongside the occasional result well outside the top 30, Gidey has been reliably excellent every time he has lined up.</p></div>
+    <div class="prose"><p>It's a useful reminder that there is more than one way to be a great cross-country runner. Some athletes are capable of producing a brilliant performance on their day; others make a habit of being very, very good.</p></div>
+
+    <figure class="chart-block">
+      <h3>How reliably do the best athletes deliver?</h3>
+      <p class="sub">Every championship finish for athletes with four or more appearances. Diamond = mean; grey bar = best to worst. Further left is better.</p>
+      <div id="reliable-chart"></div>
+      <figcaption>Finishing positions across all appearances, rather than just the best result.</figcaption>
+    </figure>
+    <div class="prose"><h2>How does success on the track and road translate over the mud?</h2></div>
+    <div class="prose"><p>Cross-country is often treated as a different discipline from track and road running, but how much overlap is there between the country's best performers? To explore that, I've looked at the national 1500m and 5000m titles, as well as the national marathon championship, among our National XC champions.</p></div>
+
+    <figure class="chart-block">
+      <h3>The all-rounders</h3>
+      <p class="sub">Every individual National XC champion from 2016–2025, and their national 1500m, 5000m and marathon titles.</p>
+      <div id="allrounders-legend"></div>
+      <div id="allrounders-chart"></div>
+      <figcaption>Athletes are grouped by whether they won another national title in the same year, a different year, or not at all.</figcaption>
+    </figure>
+    <div class="prose"><p>Three broad groups emerge. First, there are those who managed a sort of golden year: winning the National XC title and another major national title in the same calendar year. Then there are athletes who have won another national title, but in a different year. Finally, there are those whose only major national championship victory in this analysis came in cross-country.</p></div>
+    <div class="prose"><p>Perhaps unsurprisingly, the most common combination is the 5000m and cross-country double. Hiko Tonosa, Darragh McElhinney and Fionnuala McCormack have all managed it. Others have approached the double from a different direction: Ciara Mageean paired her cross-country success with a national 1500m title, while Annmarie McGlynn produced perhaps the most impressive feat of all in 2024, backing up her Dublin Marathon victory with a National XC title just three weeks later.</p></div>
+    <div class="prose"><p>There are another five athletes who have won one of the other national titles, just not in the same year: Paul Pollock, Mark Christie, Brian Fay, Sarah Healy and Michelle Finn. And then there are six cross-country specialists in this particular group: Liam Brady, Kevin Dooney, Keelan Kilrehill, Cormac Dalton, Shona Heaslip and Fiona Everard.</p></div>
+    <div class="prose"><p>Of course, this is only one way of measuring versatility. Winning a national title is a pretty high bar, and plenty of excellent track and road runners will have had successful careers without collecting one. But it does show that the route to a National XC title doesn't always look the same.</p></div>
+    <div class="prose"><h2>Does U23 success predict senior success?</h2></div>
+    <div class="prose"><p>If there's one thing runners are particularly fond of, it's making predictions about the future. Usually, these involve looking at a promising young athlete and confidently declaring that they're destined for great things. But how much can we actually learn from someone's U23 career?</p></div>
+    <div class="prose"><p>There are two related questions here. First, how often does U23 success translate into senior success? And second, among athletes who go on to have a senior career, how well does their U23 performance predict what comes next?</p></div>
+    <div class="prose"><p>There are some important limitations to acknowledge. Our dataset only covers 2016–2025, so it is left-censored for older athletes and right-censored for younger ones: we don't see what happened before 2016 or what will happen after 2025. Not every athlete who has enjoyed U23 success has yet had the opportunity to establish a senior career. To account for that, I've restricted this analysis to athletes with at least two years of follow-up.</p></div>
+    <div class="prose"><p>I've also defined the start of an athlete's senior career as the point at which their U23 eligibility expires, regardless of whether they had previously won a medal in the overall senior race.</p></div>
+
+    <figure class="chart-block">
+      <h3>Do U23 stars become senior stars?</h3>
+      <p class="sub">Best U23 finish against best later senior finish, one dot per athlete. Only athletes with U23 and senior careers in 2016–2025 are included.</p>
+      <div id="u23-legend"></div>
+      <div id="u23-chart"></div>
+      <figcaption>Lower percentages indicate better finishes. The dashed diagonal marks equal relative performance at both levels.</figcaption>
+    </figure>
+    <div class="prose"><p>With those caveats in mind, there is a fairly strong association between U23 and senior success. Interestingly, the pattern looks different for men and women. Most of the men who have competed across both stages of their careers tend to improve on their U23 performances as seniors. Among the women, there are more athletes whose senior results are worse than their U23 results.</p></div>
+    <div class="prose"><p>There are some interesting questions here about talent development, and why the patterns might differ between the two groups. We won't solve those today, but it's certainly something worth returning to.</p></div>
+    <div class="prose"><p>For a bit of fun, I've also picked out some of the biggest improvers. These are athletes who finished in the bottom half of the U23 field but went on to finish in the top 20% as seniors. Just four athletes meet that definition: Eoghan McElhinney, Tony McCambridge, Nadine Donegan and Edel Monaghan.</p></div>
+    <div class="prose"><p>That's a fairly exclusive club, but it's also an encouraging one. You don't necessarily need to be setting the world alight as a U23 to become an excellent senior athlete. Some careers take a little longer to get going.</p></div>
+    <div class="prose"><h2>Different paths to the top</h2></div>
+    <div class="prose"><p>And that brings us to perhaps the most interesting question of all: what does improvement actually look like over the course of a career?</p></div>
+    <div class="prose"><p>To explore this, I've looked at changes in athletes' relative finishing positions within the field, rather than simply comparing the raw places they achieved. This matters because finishing 50th in a field of 200 is a rather different proposition from finishing 50th in a field of 100.</p></div>
+    <div class="prose"><p>There are some enormous improvements in the data. Dylan Wright takes the men's title, improving from 152nd to 70th, while Nadine Donegan leads the women's rankings, moving from 68th to sixth.</p></div>
+    <div class="prose"><p>These are impressive jumps, and they underline just how different the journey to the top can be. Some athletes arrive at the championships already among the leading contenders. Others spend years working their way through the field. And while the eventual result might look similar, the careers behind it can be very different.</p></div>
+    <div class="prose"><p>It is worth remembering that a single measure of improvement can't capture everything. An athlete who starts near the front has much less room to move up the rankings than someone starting near the back. But there is something satisfying about seeing athletes make such substantial progress, and it's a reminder that a disappointing early result doesn't have to define a career.</p></div>
+
+    <figure class="chart-block">
+      <h3>Biggest improvers</h3>
+      <p class="sub">First championship to best championship (three or more appearances), ranked by improvement in percentile of the field.</p>
+        <div id="improvers-legend"></div>
+        <div id="improvers-chart"></div>
+
+      <figcaption>Men and women are ranked separately; a larger move to the right represents a greater improvement.</figcaption>
+    </figure>
+    <div class="prose"><h2>The ones that keep showing up</h2></div>
+    <div class="prose"><p>Improvement is one thing; longevity is another. It's easy to get excited about a promising young athlete or a spectacular breakthrough performance. It's rather harder to keep coming back, year after year, and putting yourself on the line.</p></div>
+    <div class="prose"><p>Across the decade, only one man and one woman have competed in every edition of the championships: Paul McKinney and Rachel Gibson. A further 10 women and seven men have completed at least seven of the nine editions.</p></div>
+    <div class="prose"><p>What's particularly interesting is that longevity doesn't necessarily go hand in hand with podium success. None of the most regular male competitors have made it onto the podium, while three of the most frequent female competitors have: Mary Mulhare, Michelle Finn and Una Britton.</p></div>
+    <div class="prose"><p>There's something to be said for that sort of commitment. A career isn't just the handful of days when everything goes perfectly. It's also the years of training, the less-than-perfect seasons, the races where you're not quite at your best, and the decision to turn up anyway.</p></div>
+
+    <figure class="chart-block">
+      <h3>The ever-presents</h3>
+      <p class="sub">The athletes with the most championship appearances, and where they finished each year.</p>
+      <div id="everpresent-legend"></div>
+      <div id="everpresent-chart"></div>
+
+      <figcaption>Finishing positions across the decade; blank cells indicate no appearance that year.</figcaption>
+    </figure>
+    <div class="prose"><h2>What makes a successful XC career?</h2></div>
+    <div class="prose"><p>So, what have we learned? Winning is hard (obviously; we didn't need to spill all these virtual inky pixels to establish that). But sustained excellence is harder still, with relatively few athletes managing to produce consistently outstanding results over several years.</p></div>
+    <div class="prose"><p>U23 success is associated with later senior success, but it doesn't determine it. Some athletes improve dramatically as they get older, while others make their mark through sheer longevity and the ability to keep performing at a high level.</p></div>
+    <div class="prose"><p>And perhaps that's the most interesting finding of all: there isn't one template for a successful cross-country career.</p></div>
+    <div class="prose"><p>Which is the greater achievement: the athlete who has a stellar U23 career followed by a brilliant, if relatively short, senior career? The one who starts near the back of the field and gradually works their way into the top 10 or 20? Or the athlete who turns up year after year and produces consistently excellent results?</p></div>
+    <div class="prose"><p>Perhaps it's also the athlete who keeps competing for their club even when they're not fit, or when they're having a difficult season. The person who might never win a medal but is always there, doing their bit.</p></div>
+    <div class="prose"><p>There is no right answer, of course. And perhaps that's exactly why we love this sport.</p></div>
+    <div class="prose"><h2>Note on the data</h2></div>
+    <div class="prose"><p>All results for the National XC Championships were taken from the Athletics Ireland website. I've made every effort to ensure the dataset is as accurate as possible, but some errors may remain. Any that have slipped through are unlikely to materially affect the analysis.</p></div>
+    <div class="prose"><p>At the heart of the project is an attempt to assign each athlete a unique identifier and follow them across the years. This is not always straightforward.</p></div>
+    <div class="prose"><p>I've corrected a number of obvious misspellings and inconsistencies in names, including the use of fadas. However, if you sometimes go by Tom and sometimes by Thomas, I may not have been able to identify you as the same person. If there are any such athletes out there, you have only yourselves to blame: pick a name and stick to it.</p></div>
+    <div class="prose"><p>Name changes, particularly following marriage, present another challenge. I manually searched for women sharing a first name and club where one athlete appeared in the results as another disappeared, with similar finishing positions. I identified a few possible cases, but none that I could confidently match or that would materially affect the rankings.</p></div>
+    <div class="prose"><p>Club changes are another complication. There are cases where an athlete with the same name appears for one club and is subsequently replaced by someone with the same name at another club, with no overlap between the two. Darragh McElhinney's appearances for UCD and then Bantry are one example. In the absence of evidence to suggest otherwise, I've treated these as genuine transfers and followed the athlete across clubs.</p></div>
+    <div class="prose"><p>There are inevitably some judgement calls involved in putting together a dataset like this. I've tried to be consistent, and the analysis should give a good overall picture of the decade, even if it isn't perfect.</p></div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>© 2026 Run the Numbers</span>
+      <a href="https://www.instagram.com/runthenumbers.ie/" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="currentColor"/>
+        </svg>
+        Instagram
+      </a>
+    </div>
+  </footer>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="charts.js"></script>
+  <script src="xc-indiv-data.js"></script>
+  <script src="indiv_charts.js"></script>
+  <script>
+    RTN.individualMedalLegend(document.getElementById('indiv-medal-legend'));
+    RTN.individualMedalTable(document.getElementById('indiv-medals-men'), XC_INDIV.men, {
+      aria: 'Men: every individual podium finish at the National Cross Country Championships'
+    });
+    RTN.individualMedalTable(document.getElementById('indiv-medals-women'), XC_INDIV.women, {
+      aria: 'Women: every individual podium finish at the National Cross Country Championships'
+    });
+    RTN.marginLegend(document.getElementById('margin-legend'));
+    RTN.marginChart(document.getElementById('margin-chart'), XC_MARGINS);
+    RTN.depthLegend(document.getElementById('depth-legend'));
+    RTN.depthChart(document.getElementById('depth-chart'), XC_DEPTH);
+    RTN.reliableChart(document.getElementById('reliable-chart'), XC_RELIABLE);
+    RTN.allroundersLegend(document.getElementById('allrounders-legend'));
+    RTN.allroundersChart(document.getElementById('allrounders-chart'), XC_ALLROUNDERS);
+    RTN.u23Legend(document.getElementById('u23-legend'));
+    RTN.u23Chart(document.getElementById('u23-chart'), XC_U23);
+    RTN.improversLegend(document.getElementById('improvers-legend'));
+    RTN.improversChart(document.getElementById('improvers-chart'), XC_IMPROVERS);
+    RTN.everPresentLegend(document.getElementById('everpresent-legend'));
+    RTN.everPresentChart(document.getElementById('everpresent-chart'), XC_EVERPRESENT);
+  </script>
+</body>
+</html>
