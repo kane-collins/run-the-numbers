@@ -74,7 +74,7 @@ window.XC_INDIV = {
       "name": "Sean Tobin",
       "medals": [
         [
-          "gold",
+          "silver",
           2018
         ],
         [
@@ -151,7 +151,7 @@ window.XC_INDIV = {
       ]
     },
     {
-      "name": "Kevin Mulcare",
+      "name": "Kevin Mulcaire",
       "medals": [
         [
           "silver",
@@ -232,6 +232,23 @@ window.XC_INDIV = {
         ]
       ]
     },
+        {
+      "name": "Ciara Mageean",
+      "medals": [
+        [
+          "gold",
+          2018
+        ],
+        [
+          "silver",
+          2022
+        ],
+        [
+          "bronze",
+          2016
+        ]
+      ]
+    },
     {
       "name": "Michelle Finn",
       "medals": [
@@ -249,23 +266,7 @@ window.XC_INDIV = {
         ]
       ]
     },
-    {
-      "name": "Ciara Mageean",
-      "medals": [
-        [
-          "gold",
-          2018
-        ],
-        [
-          "gold",
-          2022
-        ],
-        [
-          "bronze",
-          2016
-        ]
-      ]
-    },
+
     {
       "name": "Ann-Marie McGlynn",
       "medals": [
@@ -300,7 +301,7 @@ window.XC_INDIV = {
           2023
         ],
         [
-          "gold",
+          "bronze",
           2024
         ],
         [
@@ -463,7 +464,7 @@ window.XC_RELIABLE = {
   ],
   Women: [
     { name: "Ciara Mageean",      f: [[2016,3],[2018,1],[2021,8],[2022,2]] },
-    { name: "Annmarie McGlynn",   f: [[2016,6],[2018,2],[2021,6],[2022,4],[2024,1]] },
+    { name: "Ann-Marie McGlynn",   f: [[2016,6],[2018,2],[2021,6],[2022,4],[2024,1]] },
     { name: "Michelle Finn",      f: [[2016,5],[2017,3],[2018,4],[2019,5],[2021,1],[2022,3],[2025,11]] },
     { name: "Mary Mulhare",       f: [[2017,17],[2018,12],[2019,2],[2021,7],[2022,5],[2023,2],[2024,5],[2025,4]] },
     { name: "Fionnuala Ross",     f: [[2017,5],[2018,3],[2023,4],[2025,18]] },
@@ -501,7 +502,7 @@ window.XC_ALLROUNDERS = {
   Women: [
     { name: "Fionnuala McCormack", group: "same",      xc: [2019], titles: { "5000m": [2014, 2019, 2022] } },
     { name: "Ciara Mageean",       group: "same",      xc: [2018], titles: { "1500m": [2011, 2014, 2016, 2018] } },
-    { name: "Annmarie McGlynn",    group: "same",      xc: [2024], titles: { "Marathon": [2023, 2024] } },
+    { name: "Ann-Marie McGlynn",    group: "same",      xc: [2024], titles: { "Marathon": [2023, 2024] } },
     { name: "Sarah Healy",         group: "different", xc: [2022], titles: { "1500m": [2019, 2021, 2023] } },
     { name: "Michelle Finn",       group: "different", xc: [2021], titles: { "5000m": [2020] } },
     { name: "Shona Heaslip",       group: "xc",        xc: [2016, 2017], titles: {} },

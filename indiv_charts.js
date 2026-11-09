@@ -1,4 +1,3 @@
-console.log("indiv_charts loaded", typeof RTN, Object.isFrozen(RTN));
 /* Run the Numbers — interactive individual charts; requires D3 v7 and charts.js. */
 (function () {
   const MEDALS = {
@@ -9,45 +8,64 @@ console.log("indiv_charts loaded", typeof RTN, Object.isFrozen(RTN));
 
   function medalTable(el, data, options={}) {
     if (!el || !data) return;
-    RTN.responsive(el, width => {
+    RTN.responsive(el, avail => {
       el.innerHTML = "";
-      const narrow = width < 560, pad = narrow ? 12 : 16;
-      const labelW = narrow ? Math.min(116,width*.36) : 132;
+      const narrow = avail < 560, pad = narrow ? 12 : 16;
+      const labelW = narrow ? Math.min(116, avail*.36) : 132;
       const noteW = narrow ? 0 : 88;
       const left = pad + labelW, rowH = narrow ? 31 : 30, top = 30;
+      const maxMedals = d3.max(data, d => d.medals.length) || 1;
+
+      // Size the chart to its content (longest row of coins + its year label),
+      // so it never stretches into a wide, mostly empty track.
+      const baseGap = narrow ? 29 : 36;
+      const medalsW = 8 + (maxMedals - 1) * baseGap + 34;
+      const natural = left + medalsW + (narrow ? 0 : 14 + noteW) + pad;
+      const width = Math.min(avail, natural);
+      const medalGap = Math.max(22, Math.min(baseGap, (width - pad - left - 8 - 34) / Math.max(1, maxMedals - 1)));
+
       const height = top + data.length*rowH + 10;
-      const medalGap = narrow ? 29 : 34;
       const svg = d3.select(el).append("svg")
-        .attr("viewBox",`0 0 ${width} ${height}`).attr("width","100%").attr("height","auto")
-        .attr("role","img").attr("aria-label",options.aria || "Individual National Cross Country medal finishes");
+        .attr("viewBox",`0 0 ${width} ${height}`).attr("width",width).attr("height",height)
+        .style("max-width","100%").style("height","auto").style("display","block").style("margin","0 auto")
+        .attr("role","group").attr("aria-label",options.aria || "Individual National Cross Country medal finishes");
 
       svg.append("g").selectAll("line").data(data).join("line")
         .attr("x1",left).attr("x2",width-pad-noteW)
         .attr("y1",(d,i)=>top+i*rowH+rowH/2).attr("y2",(d,i)=>top+i*rowH+rowH/2)
         .attr("stroke","#e7dfd2");
 
-      svg.append("g").selectAll("text").data(data).join("text")
+      const names = svg.append("g").selectAll("text").data(data).join("text")
         .attr("x",left-9).attr("y",(d,i)=>top+i*rowH+rowH/2+3.5)
         .attr("text-anchor","end").attr("fill","#62594f")
         .attr("font-size",narrow?10.5:11.5).text(d=>d.name);
 
-      const groups=svg.append("g").selectAll("g.athlete").data(data).join("g");
+      const groups=svg.append("g").selectAll("g.athlete").data(data).join("g").attr("class","athlete");
       groups.each(function(d,i) {
         const g=d3.select(this), y=top+i*rowH+rowH/2;
         d.medals.forEach((m,j)=>{
           const [type,year]=m, x=left+8+j*medalGap, color=MEDALS[type].color;
-          const point=g.append("g").attr("class","medal-point").attr("tabindex",0)
-            .attr("role","img").attr("aria-label",`${d.name}: ${MEDALS[type].label}, ${year}`);
-          point.append("circle").attr("cx",x).attr("cy",y).attr("r",5.4)
+          g.append("circle").attr("cx",x).attr("cy",y).attr("r",5.4)
             .attr("fill",color).attr("stroke","#655b50").attr("stroke-width",.75);
-          point.append("text").attr("x",x+9).attr("y",y+3)
+          g.append("text").attr("x",x+9).attr("y",y+3)
             .attr("font-size",narrow?8:9).attr("fill","#74695e")
             .text("’"+String(year).slice(-2));
-          const tip=event=>RTN.showTip(`<strong>${d.name}</strong><br>${MEDALS[type].label} medal · ${year}`,event);
-          point.on("pointerenter pointermove",tip).on("pointerleave",()=>RTN.hideTip())
-            .on("focus",()=>{const r=point.node().getBoundingClientRect();tip({clientX:r.left+r.width/2,clientY:r.top});})
-            .on("blur",()=>RTN.hideTip());
         });
+
+        // One tooltip for the whole athlete: all their medals, oldest first.
+        const chrono = d.medals.slice().sort((a,b)=>a[1]-b[1]);
+        const summary = chrono.map(([type,year])=>`${MEDALS[type].label} ’${String(year).slice(-2)}`).join(", ");
+        const html = `<strong>${d.name}</strong><br>${summary}`;
+        const hit = g.append("rect").attr("x",pad).attr("y",y-rowH/2)
+          .attr("width",width-pad*2).attr("height",rowH)
+          .attr("fill","transparent").attr("tabindex",0).attr("role","img")
+          .attr("aria-label",`${d.name}: ${chrono.map(([t,yr])=>`${MEDALS[t].label} ${yr}`).join(", ")}`);
+        const nameEl = d3.select(names.nodes()[i]);
+        const tip = event => { nameEl.attr("font-weight",700).attr("fill","#2d2823"); RTN.showTip(html,event); };
+        const off = () => { nameEl.attr("font-weight",null).attr("fill","#62594f"); RTN.hideTip(); };
+        hit.on("pointerenter pointermove",tip).on("pointerleave",off)
+          .on("focus",()=>{const r=hit.node().getBoundingClientRect();tip({clientX:r.left+r.width/2,clientY:r.top});})
+          .on("blur",off);
       });
 
       if (!narrow) {
@@ -57,16 +75,16 @@ console.log("indiv_charts loaded", typeof RTN, Object.isFrozen(RTN));
           if(!count)return;
           const y=top+(start+count/2)*rowH;
           svg.append("text").attr("x",x).attr("y",y-2).attr("font-size",9.5)
-            .attr("font-weight",600).attr("fill","#62594f").text(label);
+            .attr("font-weight",600).attr("fill","#62594f").attr("pointer-events","none").text(label);
           svg.append("text").attr("x",x).attr("y",y+11).attr("font-size",9)
-            .attr("fill","#74695e").text(`(${count})`);
+            .attr("fill","#74695e").attr("pointer-events","none").text(`(${count})`);
         });
       }
     });
   }
 
-RTN.individualMedalTable = medalTable;
-RTN.individualMedalLegend = function(el) {
+  RTN.individualMedalTable = medalTable;
+  RTN.individualMedalLegend = function(el) {
     if(!el)return;
     el.innerHTML="";
     const legend=d3.select(el).append("div").attr("class","legend");
