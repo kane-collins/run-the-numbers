@@ -70,7 +70,7 @@ img, svg { max-width: 100%; }
 }
 
 /* ---------- Home ---------- */
-.hero { padding: 88px 0 56px; }
+.hero { padding-top: 64px; padding-bottom: 40px; }
 .hero h1 {
   font-family: var(--serif); font-weight: 600; font-size: clamp(2.4rem, 6vw, 4rem);
   line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 20px; max-width: 14ch;

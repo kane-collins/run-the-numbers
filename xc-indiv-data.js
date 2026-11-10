@@ -493,7 +493,7 @@ window.XC_ALLROUNDERS = {
     { name: "Darragh McElhinney", group: "same",      xc: [2022], titles: { "5000m": [2020, 2022] } },
     { name: "Paul Pollock",       group: "different", xc: [2017], titles: { "Marathon": [2012] } },
     { name: "Mark Christie",      group: "different", xc: [2016], titles: { "1500m": [2010], "5000m": [2008, 2013] } },
-    { name: "Brian Fay",          group: "different", xc: [2025], titles: { "5000m": [2010, 2024] } },
+    { name: "Brian Fay",          group: "different", xc: [2025], titles: { "5000m": [2023, 2024] } },
     { name: "Liam Brady",         group: "xc",        xc: [2019], titles: {} },
     { name: "Kevin Dooney",       group: "xc",        xc: [2018], titles: {} },
     { name: "Keelan Kilrehill",   group: "xc",        xc: [2024], titles: {} },
