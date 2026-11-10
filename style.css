@@ -444,3 +444,25 @@ svg text { font-family: var(--sans); }
   padding-left: 14px;
   background: #f3ebdd;
 }*/
+
+.wrap.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;      /* centres each child as a box, whatever its width */
+  text-align: center;       /* centres the text inside each box */
+  padding-top: 72px;        /* top and bottom only, so .wrap's side padding stays */
+  padding-bottom: 48px;
+}
+.wrap.hero h1 {
+  margin: 0 0 0.4em;
+  max-width: none;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.wrap.hero p {
+  margin: 0;
+  max-width: 34em;
+  font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  text-wrap: balance;
+}
