@@ -1,96 +1,130 @@
 /* Run the Numbers — interactive individual charts; requires D3 v7 and charts.js. */
 (function () {
+  // Set to false to drop the small G / S / B letters inside the coins.
+  const SHOW_LETTERS = false;
+
   const MEDALS = {
-    gold: {label:"Gold",color:"#c98500"},
-    silver: {label:"Silver",color:"#A7A9AC"},
-    bronze: {label:"Bronze",color:"#a0522d"}
+    gold:   { label: "Gold",   letter: "G", color: "#d6a21e", ink: "#3d2e05" },
+    silver: { label: "Silver", letter: "S", color: "#a9adb3", ink: "#262a30" },
+    bronze: { label: "Bronze", letter: "B", color: "#b0673b", ink: "#ffffff" }
   };
 
-  function medalTable(el, data, options={}) {
+  function medalTable(el, data, options = {}) {
     if (!el || !data) return;
     RTN.responsive(el, avail => {
       el.innerHTML = "";
       const narrow = avail < 560, pad = narrow ? 12 : 16;
-      const labelW = narrow ? Math.min(116, avail*.36) : 132;
+      const labelW = narrow ? Math.min(116, avail * 0.36) : 132;
       const noteW = narrow ? 0 : 88;
-      const left = pad + labelW, rowH = narrow ? 31 : 30, top = 30;
+      const R = narrow ? 7 : 8.2;             // coin radius
+      const rowH = narrow ? 32 : 36, top = 30;
+      const yearW = narrow ? 17 : 21;         // width reserved for the ’23 label
+      const left = pad + labelW;
+      const firstX = left + R + 8;            // centre of the first coin
+      const tail = R + 4 + yearW;             // from a coin's centre to the end of its year label
       const maxMedals = d3.max(data, d => d.medals.length) || 1;
 
-      // Size the chart to its content (longest row of coins + its year label),
-      // so it never stretches into a wide, mostly empty track.
-      const baseGap = narrow ? 29 : 36;
-      const medalsW = 8 + (maxMedals - 1) * baseGap + 34;
-      const natural = left + medalsW + (narrow ? 0 : 14 + noteW) + pad;
+      // Size the chart to its content so it never stretches into a wide, mostly empty track.
+      const baseGap = narrow ? 36 : 46;
+      const natural = firstX + (maxMedals - 1) * baseGap + tail + (narrow ? pad : 14 + noteW + pad);
       const width = Math.min(avail, natural);
-      const medalGap = Math.max(22, Math.min(baseGap, (width - pad - left - 8 - 34) / Math.max(1, maxMedals - 1)));
+      const lineEnd = width - pad - noteW;
+      const medalGap = maxMedals > 1
+        ? Math.max(28, Math.min(baseGap, (lineEnd - 2 - tail - firstX) / (maxMedals - 1)))
+        : baseGap;
 
-      const height = top + data.length*rowH + 10;
+      const height = top + data.length * rowH + 10;
       const svg = d3.select(el).append("svg")
-        .attr("viewBox",`0 0 ${width} ${height}`).attr("width",width).attr("height",height)
-        .style("max-width","100%").style("height","auto").style("display","block").style("margin","0 auto")
-        .attr("role","group").attr("aria-label",options.aria || "Individual National Cross Country medal finishes");
+        .attr("viewBox", `0 0 ${width} ${height}`).attr("width", width).attr("height", height)
+        .style("max-width", "100%").style("height", "auto").style("display", "block").style("margin", "0 auto")
+        .attr("role", "group").attr("aria-label", options.aria || "Individual National Cross Country medal finishes");
+
+      // Row highlight shown on hover (drawn first so it sits behind everything).
+      const bgs = svg.append("g").selectAll("rect").data(data).join("rect")
+        .attr("x", pad - 4).attr("y", (d, i) => top + i * rowH + 1)
+        .attr("width", width - pad * 2 + 8).attr("height", rowH - 2).attr("rx", 6)
+        .attr("fill", "#f1e9dc").attr("opacity", 0);
+
+      // Divider between athletes with several podiums and those with one.
+      const split = data.findIndex(d => d.medals.length === 1);
+      if (split > 0) {
+        svg.append("line").attr("x1", pad).attr("x2", width - pad)
+          .attr("y1", top + split * rowH).attr("y2", top + split * rowH)
+          .attr("stroke", "#d9cfbf").attr("stroke-dasharray", "2 3");
+      }
 
       svg.append("g").selectAll("line").data(data).join("line")
-        .attr("x1",left).attr("x2",width-pad-noteW)
-        .attr("y1",(d,i)=>top+i*rowH+rowH/2).attr("y2",(d,i)=>top+i*rowH+rowH/2)
-        .attr("stroke","#e7dfd2");
+        .attr("x1", left).attr("x2", lineEnd)
+        .attr("y1", (d, i) => top + i * rowH + rowH / 2).attr("y2", (d, i) => top + i * rowH + rowH / 2)
+        .attr("stroke", "#e7dfd2");
 
       const names = svg.append("g").selectAll("text").data(data).join("text")
-        .attr("x",left-9).attr("y",(d,i)=>top+i*rowH+rowH/2+3.5)
-        .attr("text-anchor","end").attr("fill","#62594f")
-        .attr("font-size",narrow?10.5:11.5).text(d=>d.name);
+        .attr("x", left - 9).attr("y", (d, i) => top + i * rowH + rowH / 2 + 3.5)
+        .attr("text-anchor", "end").attr("fill", "#62594f")
+        .attr("font-size", narrow ? 10.5 : 11.5).text(d => d.name);
 
-      const groups=svg.append("g").selectAll("g.athlete").data(data).join("g").attr("class","athlete");
-      groups.each(function(d,i) {
-        const g=d3.select(this), y=top+i*rowH+rowH/2;
-        d.medals.forEach((m,j)=>{
-          const [type,year]=m, x=left+8+j*medalGap, color=MEDALS[type].color;
-          g.append("circle").attr("cx",x).attr("cy",y).attr("r",5.4)
-            .attr("fill",color).attr("stroke","#655b50").attr("stroke-width",.75);
-          g.append("text").attr("x",x+9).attr("y",y+3)
-            .attr("font-size",narrow?8:9).attr("fill","#74695e")
-            .text("’"+String(year).slice(-2));
+      const groups = svg.append("g").selectAll("g.athlete").data(data).join("g").attr("class", "athlete");
+      groups.each(function (d, i) {
+        const g = d3.select(this), y = top + i * rowH + rowH / 2;
+        d.medals.forEach((m, j) => {
+          const [type, year] = m, x = firstX + j * medalGap, med = MEDALS[type];
+          g.append("circle").attr("cx", x).attr("cy", y).attr("r", R).attr("fill", med.color);
+          if (SHOW_LETTERS) {
+            g.append("text").attr("x", x).attr("y", y + (narrow ? 2.8 : 3.2)).attr("text-anchor", "middle")
+              .attr("font-size", narrow ? 8 : 9).attr("font-weight", 700).attr("fill", med.ink)
+              .attr("pointer-events", "none").text(med.letter);
+          }
+          g.append("text").attr("x", x + R + 4).attr("y", y + 3.5)
+            .attr("font-size", narrow ? 9 : 10).attr("fill", "#62594f")
+            .attr("pointer-events", "none").text("’" + String(year).slice(-2));
         });
 
         // One tooltip for the whole athlete: all their medals, oldest first.
-        const chrono = d.medals.slice().sort((a,b)=>a[1]-b[1]);
-        const summary = chrono.map(([type,year])=>`${MEDALS[type].label} ’${String(year).slice(-2)}`).join(", ");
+        const chrono = d.medals.slice().sort((a, b) => a[1] - b[1]);
+        const summary = chrono.map(([type, year]) => `${MEDALS[type].label} ’${String(year).slice(-2)}`).join(", ");
         const html = `<strong>${d.name}</strong><br>${summary}`;
-        const hit = g.append("rect").attr("x",pad).attr("y",y-rowH/2)
-          .attr("width",width-pad*2).attr("height",rowH)
-          .attr("fill","transparent").attr("tabindex",0).attr("role","img")
-          .attr("aria-label",`${d.name}: ${chrono.map(([t,yr])=>`${MEDALS[t].label} ${yr}`).join(", ")}`);
-        const nameEl = d3.select(names.nodes()[i]);
-        const tip = event => { nameEl.attr("font-weight",700).attr("fill","#2d2823"); RTN.showTip(html,event); };
-        const off = () => { nameEl.attr("font-weight",null).attr("fill","#62594f"); RTN.hideTip(); };
-        hit.on("pointerenter pointermove",tip).on("pointerleave",off)
-          .on("focus",()=>{const r=hit.node().getBoundingClientRect();tip({clientX:r.left+r.width/2,clientY:r.top});})
-          .on("blur",off);
+        const hit = g.append("rect").attr("x", pad).attr("y", y - rowH / 2)
+          .attr("width", width - pad * 2).attr("height", rowH)
+          .attr("fill", "transparent").attr("tabindex", 0).attr("role", "img")
+          .attr("aria-label", `${d.name}: ${chrono.map(([t, yr]) => `${MEDALS[t].label} ${yr}`).join(", ")}`);
+        const nameEl = d3.select(names.nodes()[i]), bgEl = d3.select(bgs.nodes()[i]);
+        const tip = event => {
+          nameEl.attr("font-weight", 700).attr("fill", "#2d2823");
+          bgEl.attr("opacity", 1);
+          RTN.showTip(html, event);
+        };
+        const off = () => {
+          nameEl.attr("font-weight", null).attr("fill", "#62594f");
+          bgEl.attr("opacity", 0);
+          RTN.hideTip();
+        };
+        hit.on("pointerenter pointermove", tip).on("pointerleave", off)
+          .on("focus", () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
+          .on("blur", off);
       });
 
       if (!narrow) {
-        const split=data.findIndex(d=>d.medals.length===1);
-        const multi=split<0?data.length:split, single=data.length-multi, x=width-pad-noteW+2;
-        [[ "Multiple podiums",0,multi ],[ "One podium",multi,single ]].forEach(([label,start,count])=>{
-          if(!count)return;
-          const y=top+(start+count/2)*rowH;
-          svg.append("text").attr("x",x).attr("y",y-2).attr("font-size",9.5)
-            .attr("font-weight",600).attr("fill","#62594f").attr("pointer-events","none").text(label);
-          svg.append("text").attr("x",x).attr("y",y+11).attr("font-size",9)
-            .attr("fill","#74695e").attr("pointer-events","none").text(`(${count})`);
+        const multi = split < 0 ? data.length : split, single = data.length - multi, x = width - pad - noteW + 2;
+        [["Multiple podiums", 0, multi], ["One podium", multi, single]].forEach(([label, start, count]) => {
+          if (!count) return;
+          const y = top + (start + count / 2) * rowH;
+          svg.append("text").attr("x", x).attr("y", y - 2).attr("font-size", 9.5)
+            .attr("font-weight", 600).attr("fill", "#62594f").attr("pointer-events", "none").text(label);
+          svg.append("text").attr("x", x).attr("y", y + 11).attr("font-size", 9)
+            .attr("fill", "#74695e").attr("pointer-events", "none").text(`(${count})`);
         });
       }
     });
   }
 
   RTN.individualMedalTable = medalTable;
-  RTN.individualMedalLegend = function(el) {
-    if(!el)return;
-    el.innerHTML="";
-    const legend=d3.select(el).append("div").attr("class","legend");
-    Object.values(MEDALS).forEach(m=>{
-      const item=legend.append("span").attr("class","legend-item");
-      item.append("i").style("background",m.color);
+  RTN.individualMedalLegend = function (el) {
+    if (!el) return;
+    el.innerHTML = "";
+    const legend = d3.select(el).append("div").attr("class", "legend");
+    Object.values(MEDALS).forEach(m => {
+      const item = legend.append("span").attr("class", "legend-item");
+      item.append("i").style("background", m.color);
       item.append("span").text(m.label);
     });
   };
@@ -99,6 +133,8 @@
 /* Run the Numbers — winning-margin lollipop chart. Requires D3 v7 and charts.js (RTN.responsive, showTip, hideTip). */
 (function () {
   const COLORS = { Men: "#23608f", Women: "#c2512f" };
+  const BAND = "#f1e3d1";        // shading for margins of five seconds or less
+  const PHOTO_FINISH = 5;        // seconds
 
   function fmt(s) {
     return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + "s";
@@ -106,12 +142,15 @@
 
   function marginChart(el, data, options = {}) {
     if (!el || !data) return;
+    const avg = {};
+    ["Men", "Women"].forEach(s => avg[s] = d3.mean(data.filter(d => d.gender === s), d => d.margin));
+
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 560, pad = narrow ? 10 : 16;
       const labelW = narrow ? Math.min(116, width * 0.36) : 232;
       const noteW = narrow ? 44 : 150;
-      const rowH = narrow ? 26 : 25, top = 8, axisH = 46;
+      const rowH = narrow ? 26 : 25, top = narrow ? 24 : 26, axisH = 46;
       const left = pad + labelW, right = width - pad - noteW;
       const height = top + data.length * rowH + axisH;
       const maxV = d3.max(data, d => d.margin);
@@ -121,8 +160,16 @@
 
       const svg = d3.select(el).append("svg")
         .attr("viewBox", `0 0 ${width} ${height}`).attr("width", "100%").attr("height", "auto")
-        .attr("role", "img")
+        .attr("role", "group")
         .attr("aria-label", options.aria || "Winning margin over second place in every National Cross Country Championship, largest to smallest");
+
+      // hover highlights, then the shaded "five seconds or less" band, drawn first so they sit behind everything
+      const bgs = svg.append("g").selectAll("rect").data(data).join("rect")
+        .attr("x", pad - 4).attr("y", (d, i) => top + i * rowH + 1)
+        .attr("width", width - pad * 2 + 8).attr("height", rowH - 2).attr("rx", 6)
+        .attr("fill", "#f1e9dc").attr("opacity", 0);
+      svg.append("rect").attr("x", x(0)).attr("y", top).attr("width", x(PHOTO_FINISH) - x(0)).attr("height", bottom - top)
+        .attr("fill", BAND);
 
       // gridlines + axis labels
       const grid = svg.append("g");
@@ -135,32 +182,48 @@
       svg.append("text").attr("x", (left + right) / 2).attr("y", bottom + 36).attr("text-anchor", "middle")
         .attr("font-size", narrow ? 11 : 12).attr("fill", "#62594f").text("Margin of victory (seconds)");
 
+      // average margin for each sex (dashed), labelled above the plot
+      ["Men", "Women"].forEach(s => {
+        const ax = x(avg[s]), color = COLORS[s];
+        svg.append("line").attr("x1", ax).attr("x2", ax).attr("y1", top - 6).attr("y2", bottom)
+          .attr("stroke", color).attr("stroke-width", 1.4).attr("stroke-dasharray", "4 3").attr("opacity", 0.85);
+        const label = narrow ? `${s} ${Math.round(avg[s])}s` : `${s} average: ${Math.round(avg[s])}s`;
+        svg.append("text").attr("x", ax + (s === "Men" ? -4 : 4)).attr("y", top - 10)
+          .attr("text-anchor", s === "Men" ? "end" : "start")
+          .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 600).attr("fill", color).text(label);
+      });
+
       const rows = svg.append("g").selectAll("g.row").data(data).join("g").attr("class", "row");
       rows.each(function (d, i) {
         const g = d3.select(this), y = top + i * rowH + rowH / 2, color = COLORS[d.gender];
         const label = narrow
           ? `’${String(d.year).slice(-2)} ${d.winner.split(" ").pop()}`
           : `${d.year} ${d.gender}: ${d.winner}`;
-        const note = narrow ? fmt(d.margin) : `${fmt(d.margin)} ahead of ${d.runnerUp}`;
 
-        g.append("text").attr("x", left - 9).attr("y", y + 3.5).attr("text-anchor", "end")
+        const nameEl = g.append("text").attr("x", left - 9).attr("y", y + 3.5).attr("text-anchor", "end")
           .attr("fill", "#62594f").attr("font-size", narrow ? 10.5 : 11.5).text(label);
         g.append("line").attr("x1", x(0)).attr("x2", x(d.margin)).attr("y1", y).attr("y2", y)
           .attr("stroke", color).attr("stroke-width", 2.2).attr("stroke-linecap", "round");
         g.append("circle").attr("cx", x(d.margin)).attr("cy", y).attr("r", 4.8).attr("fill", color);
-        g.append("text").attr("x", x(d.margin) + 9).attr("y", y + 3.2)
-          .attr("font-size", narrow ? 9 : 10).attr("fill", "#74695e").text(note);
+
+        // the margin itself in bold, the runner-up in grey
+        const note = g.append("text").attr("x", x(d.margin) + 9).attr("y", y + 3.2)
+          .attr("font-size", narrow ? 9 : 10).attr("fill", "#74695e");
+        note.append("tspan").attr("font-weight", 700).attr("fill", "#2d2823").text(fmt(d.margin));
+        if (!narrow) note.append("tspan").text(` ahead of ${d.runnerUp}`);
 
         // full-row hit area for tooltips
         const hit = g.append("rect").attr("x", pad).attr("y", y - rowH / 2)
           .attr("width", width - pad * 2).attr("height", rowH)
           .attr("fill", "transparent").attr("tabindex", 0).attr("role", "img")
           .attr("aria-label", `${d.year} ${d.gender}: ${d.winner}, ${fmt(d.margin)} ahead of ${d.runnerUp}`);
-        const tip = event => RTN.showTip(
-          `<strong>${d.winner}</strong> · ${d.gender}, ${d.year}<br>${fmt(d.margin)} ahead of ${d.runnerUp}`, event);
-        hit.on("pointerenter pointermove", tip).on("pointerleave", () => RTN.hideTip())
+        const bgEl = d3.select(bgs.nodes()[i]);
+        const html = `<strong>${d.winner}</strong> · ${d.gender}, ${d.year}<br>${fmt(d.margin)} ahead of ${d.runnerUp}`;
+        const tip = event => { nameEl.attr("font-weight", 700).attr("fill", "#2d2823"); bgEl.attr("opacity", 1); RTN.showTip(html, event); };
+        const off = () => { nameEl.attr("font-weight", null).attr("fill", "#62594f"); bgEl.attr("opacity", 0); RTN.hideTip(); };
+        hit.on("pointerenter pointermove", tip).on("pointerleave", off)
           .on("focus", () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
-          .on("blur", () => RTN.hideTip());
+          .on("blur", off);
       });
     });
   }
@@ -174,43 +237,53 @@
       item.append("i").style("background", color);
       item.append("span").text(label);
     });
+    const band = legend.append("span").attr("class", "legend-item");
+    band.append("i").style("background", BAND).style("box-shadow", "inset 0 0 0 1px #d9c7ae").style("border-radius", "2px");
+    band.append("span").text("Five seconds or less");
   }
 
   RTN.marginChart = marginChart;
   RTN.marginLegend = marginLegend;
 })();
 
-/* Run the Numbers — "How deep is the field?" small-multiple line chart.
+/* Run the Numbers — "How deep is the field?" small-multiple band chart.
    Requires D3 v7 and charts.js (RTN.responsive, showTip, hideTip). */
 (function () {
-  const POS_COLORS = { 5: "#b5de2b", 10: "#1fa187", 20: "#31688e", 40: "#440154" };
-  const ordinal = n => n + "th";
+  const BASE = { Men: "#23608f", Women: "#c2512f" };      // same sex colours as the other charts
+  const TINT = { 5: 0.55, 10: 0.7, 20: 0.85, 40: 1 };     // how much of the colour each line gets (light = front of the field)
+  const BAND_OPACITY = [0.10, 0.16, 0.24, 0.34];          // shading for 0-5th, 5-10th, 10-20th, 20-40th
+  const INK = "#2d2823";
 
-  function mmss(s) {
-    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
-  }
+  // Optional annotations. Set to {} / false to remove.
+  const RACE_CHANGE = { Men: { year: 2024, label: "Race shortened to 7,500m" } };
+  const SHOW_AVERAGE = true;   // "40th place averaged m:ss behind" under each panel title
+
+  const ordinal = n => n + "th";
+  const mmss = s => Math.floor(s / 60) + ":" + String(Math.round(s) % 60).padStart(2, "0");
 
   function depthChart(el, data, options = {}) {
     if (!el || !data) return;
     const sexes = ["Men", "Women"];
     const positions = data.positions;
     const years = Object.keys(data.Men).map(Number);
+    const i40 = positions.indexOf(40);
     const yMax = 8, yTicks = [0, 2, 4, 6];
 
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 560;
       const padR = narrow ? 12 : 16, axisW = narrow ? 40 : 48;
-      const stripH = 22, xAxisH = 22, gap = narrow ? 0 : 22;
-      const panelH = narrow ? 170 : 250;
+      const stripH = narrow ? 36 : 40, xAxisH = 22, gap = narrow ? 0 : 22;
+      const panelH = narrow ? 180 : 250;
       const panelW = narrow ? width - axisW - padR : (width - axisW - padR - gap) / 2;
+      const labelPad = narrow ? 28 : 34;                      // room at the right for line labels
       const rows = narrow ? 2 : 1;
       const rowBlock = stripH + panelH + xAxisH + (narrow ? 14 : 0);
       const height = rows * rowBlock + 6;
 
       const svg = d3.select(el).append("svg")
         .attr("viewBox", `0 0 ${width} ${height}`).attr("width", "100%").attr("height", "auto")
-        .attr("role", "img")
+        .attr("role", "group")
         .attr("aria-label", options.aria || "Time behind the winner for the 5th, 10th, 20th and 40th place finishers, men and women, 2016 to 2025");
 
       const y = d3.scaleLinear().domain([0, yMax]).range([panelH, 0]);
@@ -219,48 +292,111 @@
         const ox = narrow ? axisW : axisW + si * (panelW + gap);
         const oy = narrow ? si * rowBlock : 0;
         const g = svg.append("g").attr("transform", `translate(${ox},${oy + stripH})`);
-        const x = d3.scaleLinear().domain([2016, 2025]).range([10, panelW - 10]);
+        const x = d3.scaleLinear().domain([2016, 2025]).range([10, panelW - labelPad]);
+        const base = BASE[sex];
+        const lineColor = p => d3.interpolateRgb("#ffffff", base)(TINT[p]);
+        const val = (yr, k) => data[sex][yr][k];
 
-        // panel background strip title
-        svg.append("text").attr("x", ox + panelW / 2).attr("y", oy + 14).attr("text-anchor", "middle")
-          .attr("font-weight", 600).attr("font-size", narrow ? 12 : 13).attr("fill", "#2d2823").text(sex);
+        // panel title and (optional) average
+        svg.append("text").attr("x", ox + panelW / 2).attr("y", oy + 15).attr("text-anchor", "middle")
+          .attr("font-weight", 700).attr("font-size", narrow ? 12.5 : 14).attr("fill", INK).text(sex);
+        if (SHOW_AVERAGE) {
+          const avg = d3.mean(years, yr => val(yr, i40));
+          svg.append("text").attr("x", ox + panelW / 2).attr("y", oy + 30).attr("text-anchor", "middle")
+            .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e")
+            .text(narrow ? `40th place averaged ${mmss(avg)} back` : `On average, 40th place finished ${mmss(avg)} behind the winner`);
+        }
 
-        // horizontal gridlines
+        // gridlines and axis labels
         yTicks.forEach(t => {
           g.append("line").attr("x1", 0).attr("x2", panelW).attr("y1", y(t)).attr("y2", y(t)).attr("stroke", "#e7dfd2");
         });
-        // y-axis labels: always on narrow, only on first panel when wide
         if (narrow || si === 0) {
           yTicks.forEach(t => {
             g.append("text").attr("x", -8).attr("y", y(t) + 3.5).attr("text-anchor", "end")
               .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e").text(t);
           });
         }
-        // x-axis labels (no race in 2020)
         years.forEach(yr => {
           g.append("text").attr("x", x(yr)).attr("y", panelH + 16).attr("text-anchor", "middle")
             .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e").text(String(yr).slice(-2));
         });
+        g.append("text").attr("x", x(2020)).attr("y", panelH + 16).attr("text-anchor", "middle")
+          .attr("font-size", 9).attr("font-style", "italic").attr("fill", "#a09585").text("no race");
 
-        // lines + points
-        positions.forEach((p, pi) => {
-          const color = POS_COLORS[p];
-          const pts = years.map(yr => ({ yr, s: data[sex][yr][pi] }));
-          g.append("path").datum(pts)
-            .attr("fill", "none").attr("stroke", color).attr("stroke-width", 2)
-            .attr("stroke-linejoin", "round")
-            .attr("d", d3.line().x(d => x(d.yr)).y(d => y(d.s / 60)));
-          pts.forEach(d => {
-            g.append("circle").attr("cx", x(d.yr)).attr("cy", y(d.s / 60)).attr("r", 3.4).attr("fill", color);
-            const hit = g.append("circle").attr("cx", x(d.yr)).attr("cy", y(d.s / 60)).attr("r", 10)
-              .attr("fill", "transparent").attr("tabindex", 0).attr("role", "img")
-              .attr("aria-label", `${sex} ${d.yr}: ${ordinal(p)} place, ${mmss(d.s)} behind the winner`);
-            const tip = event => RTN.showTip(
-              `<strong>${sex} · ${d.yr}</strong><br>${ordinal(p)} place: ${mmss(d.s)} behind the winner`, event);
-            hit.on("pointerenter pointermove", tip).on("pointerleave", () => RTN.hideTip())
-              .on("focus", () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
-              .on("blur", () => RTN.hideTip());
+        // race-length marker
+        const rc = RACE_CHANGE[sex];
+        if (rc) {
+          const rx = x(rc.year - 0.5);
+          g.append("line").attr("x1", rx).attr("x2", rx).attr("y1", 6).attr("y2", panelH)
+            .attr("stroke", "#8a7d6e").attr("stroke-width", 1).attr("stroke-dasharray", "3 3");
+          g.append("text").attr("x", rx - 5).attr("y", 16).attr("text-anchor", "end")
+            .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 600).attr("fill", "#6b6258").text(rc.label);
+        }
+
+        // shaded bands between successive finishing positions: the wider the band, the deeper the field
+        positions.forEach((p, k) => {
+          const pts = years.map(yr => ({ yr, lo: k === 0 ? 0 : val(yr, k - 1), hi: val(yr, k) }));
+          g.append("path").datum(pts).attr("fill", base).attr("fill-opacity", BAND_OPACITY[k]).attr("stroke", "none")
+            .attr("d", d3.area().x(d => x(d.yr)).y0(d => y(d.lo / 60)).y1(d => y(d.hi / 60)));
+        });
+
+        // lines and dots
+        const dotsByYear = years.map(() => []);
+        positions.forEach((p, k) => {
+          const color = lineColor(p);
+          const pts = years.map(yr => ({ yr, s: val(yr, k) }));
+          g.append("path").datum(pts).attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.2)
+            .attr("stroke-linejoin", "round").attr("d", d3.line().x(d => x(d.yr)).y(d => y(d.s / 60)));
+          pts.forEach((d, i) => {
+            dotsByYear[i].push(g.append("circle").attr("cx", x(d.yr)).attr("cy", y(d.s / 60)).attr("r", 3.2).attr("fill", color));
           });
+        });
+
+        // direct labels at the end of each line, nudged apart where they would collide
+        const labels = positions.map((p, k) => ({ p, y: y(val(years[years.length - 1], k) / 60) }))
+          .sort((a, b) => b.y - a.y);                          // lowest on screen first
+        for (let i = 1; i < labels.length; i++) labels[i].y = Math.min(labels[i].y, labels[i - 1].y - 11);
+        labels.forEach(l => {
+          g.append("text").attr("x", x(years[years.length - 1]) + 8).attr("y", l.y + 3.5)
+            .attr("font-size", narrow ? 9.5 : 10.5).attr("fill", "#62594f").text(ordinal(l.p));
+        });
+
+        // call out the single biggest 40th-place gap, if it is unique
+        const peak = d3.max(years, yr => val(yr, i40));
+        const peakYears = years.filter(yr => val(yr, i40) === peak);
+        if (peakYears.length === 1) {
+          const py = y(peak / 60);
+          g.append("text").attr("x", x(peakYears[0]) + 8).attr("y", py + 3.5)
+            .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 700).attr("fill", INK)
+            .text(`${mmss(peak)} in ’${String(peakYears[0]).slice(-2)}`);
+        }
+
+        // hover columns: one per year, showing all four gaps at once
+        const guide = g.append("line").attr("y1", 0).attr("y2", panelH).attr("stroke", INK)
+          .attr("stroke-opacity", 0.35).attr("stroke-dasharray", "3 3").attr("opacity", 0);
+        const xs = years.map(x);
+        years.forEach((yr, i) => {
+          const left = i === 0 ? 0 : (xs[i - 1] + xs[i]) / 2;
+          const right = i === years.length - 1 ? panelW : (xs[i] + xs[i + 1]) / 2;
+          const lines = positions.map((p, k) => `${ordinal(p)}: ${mmss(val(yr, k))}`).join("<br>");
+          const html = `<strong>${sex} · ${yr}</strong><br>${lines}<br><span style="opacity:.8">behind the winner</span>`;
+          const hit = g.append("rect").attr("x", left).attr("y", 0).attr("width", right - left).attr("height", panelH)
+            .attr("fill", "transparent").attr("tabindex", 0).attr("role", "img")
+            .attr("aria-label", `${sex} ${yr}: ` + positions.map((p, k) => `${ordinal(p)} place ${mmss(val(yr, k))} behind the winner`).join(", "));
+          const tip = event => {
+            guide.attr("x1", xs[i]).attr("x2", xs[i]).attr("opacity", 1);
+            dotsByYear[i].forEach(c => c.attr("r", 4.8));
+            RTN.showTip(html, event);
+          };
+          const off = () => {
+            guide.attr("opacity", 0);
+            dotsByYear[i].forEach(c => c.attr("r", 3.2));
+            RTN.hideTip();
+          };
+          hit.on("pointerenter pointermove", tip).on("pointerleave", off)
+            .on("focus", () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
+            .on("blur", off);
         });
       });
 
@@ -276,9 +412,9 @@
     el.innerHTML = "";
     const legend = d3.select(el).append("div").attr("class", "legend");
     legend.append("span").attr("class", "legend-item").style("font-weight", 500).text("Finishing position");
-    Object.entries(POS_COLORS).forEach(([p, color]) => {
+    Object.entries(TINT).forEach(([p, t]) => {
       const item = legend.append("span").attr("class", "legend-item");
-      item.append("i").style("background", color);
+      item.append("i").style("background", d3.interpolateRgb("#ffffff", "#5b534a")(t));
       item.append("span").text(ordinal(p));
     });
   }
@@ -351,9 +487,18 @@
           g.append("rect").attr("x", x(d.best) - 3).attr("y", y - 4.5)
             .attr("width", Math.max(0, x(d.worst) - x(d.best)) + 6).attr("height", 9).attr("rx", 4.5)
             .attr("fill", "#d9d5ce");
-          d.f.forEach(([yr, pos]) => {
-            g.append("circle").attr("cx", x(pos)).attr("cy", y).attr("r", 3.4)
-              .attr("fill", color).attr("opacity", 0.6);
+          // Nudge dots that would overlap onto separate "lanes" above/below the row's centre line.
+          const R = 3.4, step = 4;
+          const laneOffsets = [0, -step, step, -2 * step, 2 * step];
+          const lanes = [];   // x position of the last dot placed in each lane
+          d.f.slice().sort((a, b) => a[1] - b[1]).forEach(([yr, pos]) => {
+            const cx = x(pos);
+            let lane = lanes.findIndex(lx => cx - lx >= 2 * R);   // first lane with room
+            if (lane === -1) lane = lanes.length;
+            lanes[lane] = cx;
+            g.append("circle")
+              .attr("cx", cx).attr("cy", y + (laneOffsets[lane] ?? 0))
+              .attr("r", R).attr("fill", color).attr("opacity", 0.6);
           });
           g.append("path")
             .attr("transform", `translate(${x(d.mean)},${y})`)
@@ -643,78 +788,112 @@
   RTN.u23Legend = u23Legend;
 })();
 
-/* Run the Numbers — "Biggest improvers" arrow chart.
+/* Run the Numbers — "Biggest improvers" arrow chart, on a percentile-of-the-field axis.
    Requires D3 v7 and charts.js (RTN.responsive, showTip, hideTip). */
 (function () {
   const COLORS = { Men: "#23608f", Women: "#c2512f" };
   const GREY = "#8c857b", INK = "#2d2823";
+  const topPct = v => Math.max(1, Math.round(v * 100));   // 0.0109 -> "top 1%"
+
+  function prep(list) {
+    return list.map(([name, club, races, y0, p0, pct0, y1, p1, pct1]) => ({
+      name, club, races, y0, p0, pct0, y1, p1, pct1, gain: pct0 - pct1
+    })).sort((a, b) => b.gain - a.gain);
+  }
 
   function improversChart(el, data, options = {}) {
     if (!el || !data) return;
     const sexes = ["Men", "Women"];
+    const rowsBySex = {};
+    sexes.forEach(s => rowsBySex[s] = prep(data[s]));
 
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 560, pad = narrow ? 10 : 16;
-      const labelW = narrow ? Math.min(106, width * 0.3) : 132;
-      const leftLab = narrow ? 44 : 64, rightLab = narrow ? 46 : 68;
+      const labelW = narrow ? Math.min(98, width * 0.27) : 132;
+      const leftLab = narrow ? 44 : 64, rightLab = narrow ? 44 : 66, gainW = narrow ? 40 : 58;
       const rowH = narrow ? 26 : 28, stripH = 26, tickH = 20, blockGap = 14, titleH = 28;
-      const x0 = pad + labelW + leftLab, x1 = width - pad - rightLab;
-      const x = d3.scaleLinear().domain([155, 0]).range([x0, x1]); // better finishes to the right
-      const ticks = [150, 100, 50, 0];
+      const x0 = pad + labelW + leftLab, x1 = width - pad - rightLab - gainW;
+      const x = d3.scaleLinear().domain([1.03, 0]).range([x0, x1]);   // better finishes to the right
+      const ticks = [1, 0.75, 0.5, 0.25, 0];
 
-      const blocks = sexes.map(s => ({ sex: s, h: stripH + data[s].length * rowH + tickH }));
+      const blocks = sexes.map(s => ({ sex: s, h: stripH + rowsBySex[s].length * rowH + tickH }));
       const height = blocks.reduce((s, b) => s + b.h, 0) + blockGap * (blocks.length - 1) + titleH;
 
       const svg = d3.select(el).append("svg")
         .attr("viewBox", `0 0 ${width} ${height}`).attr("width", "100%").attr("height", "auto")
-        .attr("role", "img")
-        .attr("aria-label", options.aria || "For each athlete, their first and best finishing positions at the National Cross Country Championships");
+        .attr("role", "group")
+        .attr("aria-label", options.aria || "For each athlete, their debut and best finishing positions at the National Cross Country Championships, as a share of the field");
 
       const lab = (p, yr) => narrow ? `#${p} ’${String(yr).slice(-2)}` : `#${p} (${yr})`;
 
       let oy = 0;
       blocks.forEach(({ sex, h }) => {
-        const color = COLORS[sex], rows = data[sex];
+        const color = COLORS[sex], rows = rowsBySex[sex];
         const top = oy + stripH, bottom = top + rows.length * rowH;
 
         svg.append("text").attr("x", pad).attr("y", oy + 16).attr("font-weight", 700)
           .attr("font-size", narrow ? 12.5 : 14).attr("fill", INK).text(sex);
+        svg.append("text").attr("x", width - pad).attr("y", oy + 16).attr("text-anchor", "end")
+          .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 600).attr("fill", "#8a7d6e")
+          .text(narrow ? "GAIN" : "GAIN (% OF FIELD)");
+
+        // hover highlights first, so they sit behind everything else
+        const bgs = svg.append("g").selectAll("rect").data(rows).join("rect")
+          .attr("x", pad - 4).attr("y", (d, i) => top + i * rowH + 1)
+          .attr("width", width - pad * 2 + 8).attr("height", rowH - 2).attr("rx", 6)
+          .attr("fill", "#f1e9dc").attr("opacity", 0);
 
         ticks.forEach(t => {
           svg.append("line").attr("x1", x(t)).attr("x2", x(t)).attr("y1", top).attr("y2", bottom).attr("stroke", "#e7dfd2");
           svg.append("text").attr("x", x(t)).attr("y", bottom + 15).attr("text-anchor", "middle")
-            .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e").text(t);
+            .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e").text(Math.round(t * 100) + "%");
         });
 
-        rows.forEach(([name, p0, y0, p1, y1], i) => {
+        rows.forEach((d, i) => {
           const cy = top + i * rowH + rowH / 2, g = svg.append("g");
-          g.append("text").attr("x", pad).attr("y", cy + 3.5).attr("font-size", narrow ? 10.5 : 11.5)
-            .attr("fill", "#62594f").text(name);
-          g.append("line").attr("x1", x(p0)).attr("x2", x(p1) - 5).attr("y1", cy).attr("y2", cy)
+          const nameEl = g.append("text").attr("x", pad).attr("y", cy + 3.5).attr("font-size", narrow ? 10.5 : 11.5)
+            .attr("fill", "#62594f").text(d.name);
+          g.append("line").attr("x1", x(d.pct0)).attr("x2", x(d.pct1) - 5).attr("y1", cy).attr("y2", cy)
             .attr("stroke", color).attr("stroke-width", 2.4);
-          g.append("path").attr("d", `M${x(p1)},${cy} l-8,-4.5 l0,9 z`).attr("fill", color);
-          g.append("circle").attr("cx", x(p0)).attr("cy", cy).attr("r", 4).attr("fill", GREY);
-          g.append("text").attr("x", x(p0) - 9).attr("y", cy + 3).attr("text-anchor", "end")
-            .attr("font-size", narrow ? 9 : 10).attr("fill", "#74695e").text(lab(p0, y0));
-          g.append("text").attr("x", x(p1) + 9).attr("y", cy + 3.2)
-            .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 700).attr("fill", INK).text(lab(p1, y1));
+          g.append("path").attr("d", `M${x(d.pct1)},${cy} l-8,-4.5 l0,9 z`).attr("fill", color);
+          g.append("circle").attr("cx", x(d.pct0)).attr("cy", cy).attr("r", 4).attr("fill", GREY);
+          g.append("text").attr("x", x(d.pct0) - 9).attr("y", cy + 3).attr("text-anchor", "end")
+            .attr("font-size", narrow ? 9 : 10).attr("fill", "#74695e").text(lab(d.p0, d.y0));
+          g.append("text").attr("x", x(d.pct1) + 9).attr("y", cy + 3.2)
+            .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 700).attr("fill", INK).text(lab(d.p1, d.y1));
+          g.append("text").attr("x", width - pad).attr("y", cy + 3.5).attr("text-anchor", "end")
+            .attr("font-size", narrow ? 11 : 12.5).attr("font-weight", 700).attr("fill", color)
+            .text("↑" + Math.round(d.gain * 100) + "%");
 
-          const html = `<strong>${name}</strong><br>First: #${p0} (${y0})<br>Best: #${p1} (${y1})<br>` +
-            `${p0 - p1} places higher`;
+          const html = `<strong>${d.name}</strong> · ${d.club}<br>` +
+            `Debut: #${d.p0} in ${d.y0} (top ${topPct(d.pct0)}%)<br>` +
+            `Best: #${d.p1} in ${d.y1} (top ${topPct(d.pct1)}%)<br>` +
+            `Climbed past ${Math.round(d.gain * 100)}% of the field · ${d.races} championships`;
           const hit = g.append("rect").attr("x", pad).attr("y", cy - rowH / 2).attr("width", width - pad * 2)
             .attr("height", rowH).attr("fill", "transparent").attr("tabindex", 0).attr("role", "img")
-            .attr("aria-label", `${name}: first championship ${p0}th in ${y0}, best ${p1}th in ${y1}`);
-          const tip = event => RTN.showTip(html, event);
-          hit.on("pointerenter pointermove", tip).on("pointerleave", () => RTN.hideTip())
+            .attr("aria-label", `${d.name}: debut ${d.p0}th in ${d.y0}, best ${d.p1}th in ${d.y1}, climbed past ${Math.round(d.gain * 100)} percent of the field`);
+          const bgEl = d3.select(bgs.nodes()[i]);
+          const tip = event => {
+            nameEl.attr("font-weight", 700).attr("fill", INK);
+            bgEl.attr("opacity", 1);
+            RTN.showTip(html, event);
+          };
+          const off = () => {
+            nameEl.attr("font-weight", null).attr("fill", "#62594f");
+            bgEl.attr("opacity", 0);
+            RTN.hideTip();
+          };
+          hit.on("pointerenter pointermove", tip).on("pointerleave", off)
             .on("focus", () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
-            .on("blur", () => RTN.hideTip());
+            .on("blur", off);
         });
         oy += h + blockGap;
       });
 
       svg.append("text").attr("x", (x0 + x1) / 2).attr("y", height - 6).attr("text-anchor", "middle")
-        .attr("font-size", narrow ? 11 : 12).attr("fill", "#62594f").text("Finishing position (better to the right)");
+        .attr("font-size", narrow ? 11 : 12).attr("fill", "#62594f")
+        .text("Finishing position in the field (top x%; better to the right)");
     });
   }
 
@@ -722,7 +901,7 @@
     if (!el) return;
     el.innerHTML = "";
     const legend = d3.select(el).append("div").attr("class", "legend");
-    [["First championship", GREY], ["Best championship (men)", COLORS.Men], ["Best championship (women)", COLORS.Women]]
+    [["Debut championship", GREY], ["Best championship (men)", COLORS.Men], ["Best championship (women)", COLORS.Women]]
       .forEach(([label, color]) => {
         const item = legend.append("span").attr("class", "legend-item");
         item.append("i").style("background", color);

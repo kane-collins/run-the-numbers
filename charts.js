@@ -16,7 +16,7 @@ const RTN = (() => {
     let x = event.clientX + pad, y = event.clientY + pad;
     if (x + w > window.innerWidth - 8) x = event.clientX - w - pad;
     if (y + h > window.innerHeight - 8) y = event.clientY - h - pad;
-    t.style('left', Math.max(8, x) + 'px').style('top', Math.max(8, y) + 'px');
+    t.style('left', Math.max(10, x) + 'px').style('top', Math.max(10, y) + 'px');
   }
 
   function hideTip() { ensureTip().classed('visible', false); }

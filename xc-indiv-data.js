@@ -624,34 +624,35 @@ window.XC_U23 = {
   ]
 };
 
-/* Biggest improvers: first championship to best championship (3+ appearances).
-   Each row: [name, first position, first year, best position, best year].
-   Rows are in the order of the original chart (ranked by improvement in percentile of the field).
-   Transcribed from the supplied chart. */
+/* Biggest improvers: debut championship to best championship (3+ appearances).
+   Each row: [name, club, races, debut year, debut position, debut percentile,
+              best year, best position, best percentile].
+   Percentile = position / field size (0 = winner, 1 = last), so lower is better.
+   Gain (percentage points of the field climbed) = debut percentile - best percentile. */
 window.XC_IMPROVERS = {
   Men: [
-    ["Dylan Wright",       152, 2019,  70, 2024],
-    ["Jamie Kelly",        148, 2021,  47, 2024],
-    ["Gavin O'Rourke",     117, 2019,  32, 2021],
-    ["Jack Miskella",      131, 2019,  73, 2024],
-    ["Eoghan McElhinney",   90, 2019,  27, 2025],
-    ["James McCarthy",      82, 2016,  30, 2017],
-    ["Sean Doran",         116, 2016,  67, 2019],
-    ["Pierce Geoghegan",   113, 2016,  63, 2018],
-    ["Jayme Rossiter",      58, 2016,  11, 2019],
-    ["Michael McCarthy",   130, 2018, 110, 2023]
+    ["Dylan Wright",       "Lucan Harriers",       5, 2019, 152, 0.9157, 2024,  70, 0.3535],
+    ["Jamie Kelly",        "Ennis Track",          5, 2021, 148, 0.7831, 2024,  47, 0.2374],
+    ["Gavin O'Rourke",     "Leevale",              3, 2019, 117, 0.7048, 2021,  32, 0.1693],
+    ["Jack Miskella",      "Craughwell",           4, 2019, 131, 0.7892, 2024,  73, 0.3687],
+    ["Eoghan McElhinney",  "Bantry",               5, 2019,  90, 0.5422, 2025,  27, 0.1579],
+    ["James McCarthy",     "East Cork",            3, 2016,  82, 0.5325, 2017,  30, 0.1786],
+    ["Sean Doran",         "Clonliffe Harriers",   6, 2016, 116, 0.7532, 2019,  67, 0.4036],
+    ["Pierce Geoghegan",   "Liffey Valley",        4, 2016, 113, 0.7338, 2018,  63, 0.3889],
+    ["Jayme Rossiter",     "Clonliffe Harriers",   6, 2016,  58, 0.3766, 2019,  11, 0.0663],
+    ["Michael McCarthy",   "Dundrum South Dublin", 5, 2018, 130, 0.8025, 2023, 110, 0.5093]
   ],
   Women: [
-    ["Nadine Donegan",      68, 2016,   6, 2023],
-    ["Emily Grennan",       76, 2016,  27, 2023],
-    ["Edel Monaghan",       66, 2018,   9, 2023],
-    ["Cliona Murphy",       51, 2017,  13, 2019],
-    ["Fiona Everard",       34, 2019,   1, 2025],
-    ["Noeleen Scanlan",     58, 2016,  21, 2022],
-    ["Aoife Coffey",        51, 2022,  15, 2023],
-    ["Claire McGuigan",     36, 2017,   8, 2019],
-    ["Lucy Barrett",        63, 2019,  39, 2022],
-    ["Helen McCready",      72, 2018,  30, 2019]
+    ["Nadine Donegan",     "Tullamore Harriers",   6, 2016,  68, 0.7234, 2023,   6, 0.0952],
+    ["Emily Grennan",      "Tullamore Harriers",   4, 2019,  76, 0.9744, 2023,  27, 0.4286],
+    ["Edel Monaghan",      "Dublin City Harriers", 7, 2018,  66, 0.6535, 2023,   9, 0.1429],
+    ["Cliona Murphy",      "Dublin City Harriers", 8, 2017,  51, 0.6456, 2019,  13, 0.1667],
+    ["Fiona Everard",      "Bandon",               5, 2019,  34, 0.4359, 2025,   1, 0.0109],
+    ["Noeleen Scanlan",    "Finn Valley",          3, 2016,  58, 0.6170, 2022,  21, 0.2471],
+    ["Aoife Coffey",       "Lucan Harriers",       4, 2022,  51, 0.6000, 2023,  15, 0.2381],
+    ["Claire McGuigan",    "Lifford Strabane",     3, 2017,  36, 0.4557, 2019,   8, 0.1026],
+    ["Lucy Barrett",       "Raheny Shamrock",      5, 2019,  63, 0.8077, 2022,  39, 0.4588],
+    ["Helen McCready",     "Rosses",               3, 2018,  72, 0.7129, 2019,  30, 0.3846]
   ]
 };
 
