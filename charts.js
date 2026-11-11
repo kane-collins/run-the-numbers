@@ -141,81 +141,158 @@ const RTN = (() => {
     });
   }
 
-  /* ---------- Medal table: stacked horizontal bars ----------
-     items = [{club, full, gold, silver, bronze, years: {gold: [], silver: [], bronze: []}}] */
+/* ---------- Medal table: one coin per medal ----------
+     items = [{club, full, gold, silver, bronze, years: {gold: [], silver: [], bronze: []}}]
+     Drop-in replacement for the old stacked-bar medalBars(): same name, same arguments. */
   function medalBars(el, items, o = {}) {
     const keys = ['gold', 'silver', 'bronze'];
+    const SHOW_LETTERS = false;
     const names = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
+    const letters = { gold: 'G', silver: 'S', bronze: 'B' };
+    // Default colours match the individual medal table; anything passed in o.colors overrides them.
+    const colors = Object.assign({ gold: '#d6a21e', silver: '#a9adb3', bronze: '#b0673b' }, o.colors || {});
+    const inkFor = c => (d3.lab(c).l > 58 ? '#3a3027' : '#ffffff');   // letter colour that stays readable on each coin
     const totalOf = d => d.gold + d.silver + d.bronze;
+    const yearsOf = (d, k) => ((d.years && d.years[k]) || []).slice().sort((a, b) => a - b);
+
     responsive(el, w => {
       el.innerHTML = '';
-      const rowH = 28, barH = 16;
-      const m = { top: 6, right: 30, bottom: 28, left: w < 440 ? 90 : 100 };
-      const h = m.top + rowH * items.length + m.bottom;
-      const svg = makeSvg(el, w, h, o.aria || 'Medal table');
-      const maxT = d3.max(items, totalOf);
-      const x = d3.scaleLinear().domain([0, maxT]).range([m.left, w - m.right]);
-      const ticks = d3.range(0, maxT + 1);
+      const narrow = w < 440;
+      const maxT = d3.max(items, totalOf) || 1;
+      const nameW = narrow ? 96 : 118, totalW = 34, padR = 8;
+      const rowH = narrow ? 32 : 36, top = 22, bottom = 6;
+      const yearW = narrow ? 17 : 21;                       // width reserved for each ’23 label
+      let R = narrow ? 7 : 8.2;                             // coin radius
 
-      svg.append('g').attr('class', 'grid').selectAll('line').data(ticks).join('line')
-        .attr('x1', d => x(d)).attr('x2', d => x(d)).attr('y1', m.top).attr('y2', h - m.bottom);
-      svg.append('g').attr('class', 'axis').attr('transform', `translate(0,${h - m.bottom})`)
-        .call(d3.axisBottom(x).tickValues(ticks).tickFormat(d3.format('d')).tickSize(0).tickPadding(8))
-        .call(g => g.select('.domain').remove());
+      // Use year labels when the longest row fits; otherwise pack the coins tighter and leave the years to the tooltip.
+      const avail = w - nameW - totalW - padR - 8;
+      const slotWithYears = narrow ? 38 : 48;
+      const showYears = maxT * slotWithYears <= avail;
+      let slot = slotWithYears;
+      if (!showYears) {
+        slot = Math.min(2 * R + 5, avail / maxT);
+        if (slot < 2 * R + 1) R = Math.max(4, slot / 2 - 1);
+      }
+      const W = Math.min(w, nameW + maxT * slot + 8 + totalW + padR);   // size to the content, never a wide empty track
+      const h = top + rowH * items.length + bottom;
+      const svg = makeSvg(el, W, h, o.aria || 'Medal table');
+      d3.select(el).select('svg').style('width', W + 'px').style('max-width', '100%')
+        .style('height', 'auto').style('display', 'block').style('margin', '0 auto');
+
+      const x0 = nameW + 4 + R;                             // centre of the first coin
+      const totalX = W - padR;
+
+      svg.append('text').attr('x', totalX).attr('y', 12).attr('text-anchor', 'end')
+        .attr('font-size', 9.5).attr('font-weight', 600).attr('letter-spacing', '.04em').attr('fill', '#8a7d6e').text('TOTAL');
 
       const rows = svg.append('g').selectAll('g').data(items).join('g')
-        .attr('transform', (d, i) => `translate(0,${m.top + i * rowH})`)
-        .style('transition', 'opacity .15s');
+        .attr('transform', (d, i) => `translate(0,${top + i * rowH})`);
 
-      rows.append('text').attr('x', m.left - 10).attr('y', rowH / 2 + 4).attr('text-anchor', 'end')
-        .attr('font-size', 12.5).attr('fill', '#2a2521').text(d => d.club);
+      // hover highlight, drawn first so it sits behind everything in the row
+      const bgs = rows.append('rect').attr('x', 0).attr('y', 1).attr('width', W).attr('height', rowH - 2)
+        .attr('rx', 6).attr('fill', '#f1e9dc').attr('opacity', 0);
+
+      rows.append('line').attr('x1', nameW).attr('x2', totalX - 22).attr('y1', rowH / 2).attr('y2', rowH / 2)
+        .attr('stroke', '#e7dfd2');
+
+      const nameEls = rows.append('text').attr('x', nameW - 10).attr('y', rowH / 2 + 4).attr('text-anchor', 'end')
+        .attr('font-size', narrow ? 11.5 : 12.5).attr('fill', '#2a2521').text(d => d.club);
 
       rows.each(function (d) {
-        let acc = 0;
         const g = d3.select(this);
+        let n = 0;
         keys.forEach(k => {
-          if (!d[k]) return;
-          const x0 = x(acc), x1 = x(acc + d[k]);
-          g.append('rect').attr('x', x0).attr('y', (rowH - barH) / 2)
-            .attr('width', Math.max(0, x1 - x0 - 2)).attr('height', barH).attr('rx', 3)
-            .attr('fill', o.colors[k]);
-          acc += d[k];
+          const yrs = yearsOf(d, k);
+          for (let j = 0; j < d[k]; j++) {
+            const cx = x0 + n * slot;
+            g.append('circle').attr('cx', cx).attr('cy', rowH / 2).attr('r', R).attr('fill', colors[k]);
+            if (SHOW_LETTERS && R >= 6.5) {
+              g.append('text').attr('x', cx).attr('y', rowH / 2 + (R >= 8 ? 3.2 : 2.8)).attr('text-anchor', 'middle')
+                .attr('font-size', R >= 8 ? 9 : 8).attr('font-weight', 700).attr('fill', inkFor(colors[k]))
+                .attr('pointer-events', 'none').text(letters[k]);
+            }
+            if (showYears && yrs[j] != null) {
+              g.append('text').attr('x', cx + R + 3).attr('y', rowH / 2 + 3.5).attr('font-size', narrow ? 9 : 10)
+                .attr('fill', '#62594f').attr('pointer-events', 'none').text('’' + String(yrs[j]).slice(-2));
+            }
+            n++;
+          }
         });
-        g.append('text').attr('x', x(acc) + 6).attr('y', rowH / 2 + 4).attr('font-size', 12)
-          .attr('font-weight', 600).attr('fill', '#74695e').text(acc);
+        g.append('text').attr('x', totalX).attr('y', rowH / 2 + 4.5).attr('text-anchor', 'end')
+          .attr('font-size', 13).attr('font-weight', 700).attr('fill', '#2a2521').text(n);
       });
 
-      rows.append('rect').attr('x', 0).attr('width', w).attr('height', rowH).attr('fill', 'transparent')
-        .on('pointerenter pointermove', (event, d) => {
-          rows.attr('opacity', r => (r === d ? 1 : 0.35));
-          const lines = keys.filter(k => d[k] > 0).map(k =>
-            `<div class="row"><span><i style="background:${o.colors[k]}"></i>${names[k]}</span><span>${d[k]} · ${d.years[k].join(', ')}</span></div>`
-          ).join('');
-          showTip(`<strong>${esc(d.full)}</strong>${lines}`, event);
-        })
-        .on('pointerleave', () => { rows.attr('opacity', 1); hideTip(); });
+      // full-row hit area: highlight the row and show the club's whole medal history
+      rows.each(function (d, i) {
+        const g = d3.select(this);
+        const lines = keys.filter(k => d[k] > 0).map(k =>
+          `<div class="row"><span><i style="background:${colors[k]}"></i>${names[k]}</span><span>${d[k]} · ${yearsOf(d, k).join(', ')}</span></div>`
+        ).join('');
+        const html = `<strong>${esc(d.full)}</strong>${lines}`;
+        const summary = keys.filter(k => d[k] > 0).map(k => `${d[k]} ${names[k].toLowerCase()}`).join(', ');
+        const hit = g.append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', rowH)
+          .attr('fill', 'transparent').attr('tabindex', 0).attr('role', 'img')
+          .attr('aria-label', `${d.full}: ${summary}`);
+        const bgEl = d3.select(bgs.nodes()[i]), nameEl = d3.select(nameEls.nodes()[i]);
+        const tip = event => { bgEl.attr('opacity', 1); nameEl.attr('font-weight', 700); showTip(html, event); };
+        const off = () => { bgEl.attr('opacity', 0); nameEl.attr('font-weight', null); hideTip(); };
+        hit.on('pointerenter pointermove', tip).on('pointerleave', off)
+          .on('focus', () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
+          .on('blur', off);
+      });
 
       tableView(el, ['Club', 'Gold', 'Silver', 'Bronze', 'Total'],
         items.map(d => [d.full, d.gold, d.silver, d.bronze, totalOf(d)]));
     });
   }
 
-  /* ---------- Points for gold / silver / bronze, by year ----------
-     series = [{name, color, values: [{pts, club} | null, ...]}] aligned with years (a year with no race is null in every series) */
+ /* ---------- Points for gold / silver / bronze, by year ----------
+     series = [{name, color, values: [{pts, club} | null, ...]}] aligned with years (a year with no race is null in every series)
+     Options (all optional):
+       height    chart height in px (default 320)
+       yMax      fix the top of the points axis, e.g. the same number for the men's and women's charts
+       band      false to hide the shaded gold-to-bronze "medal zone"
+       averages  false to hide the dashed average-gold and average-bronze lines
+       notes     [{year, series: 0, text: 'Lowest winning score: 22', dx: 0, dy: -12, anchor: 'middle'}] labels pinned to a point */
   function podiumLines(el, years, series, o = {}) {
+    const ns = 'podium' + Math.random().toString(36).slice(2, 8);
+    let clear = () => {};
+    // On touch screens a tap shows the tooltip; tapping anywhere outside the chart closes it.
+    d3.select(document).on('pointerdown.' + ns, event => { if (!el.contains(event.target)) clear(); });
+
     responsive(el, w => {
       el.innerHTML = '';
-      const h = o.height || 320, m = { top: 14, right: 12, bottom: 30, left: 40 };
       const narrow = w < 420;
+      const h = o.height || 320, m = { top: 16, right: narrow ? 40 : 46, bottom: 30, left: 50 };
       const svg = makeSvg(el, w, h, o.aria || 'Line chart of team points by year');
       const x = d3.scalePoint().domain(years).range([m.left + 10, w - m.right - 10]);
-      const maxV = d3.max(series, s => d3.max(s.values, v => (v ? v.pts : 0)));
+      const maxV = o.yMax || d3.max(series, s => d3.max(s.values, v => (v ? v.pts : 0)));
       // 0 at the top: lower is better, so the best scores sit highest
       const y = d3.scaleLinear().domain([0, maxV]).nice().range([m.top, h - m.bottom]);
       gridAndYAxis(svg, y, w, m);
       bottomAxis(svg,
         d3.axisBottom(x).tickValues(narrow ? years.filter((_, i) => i % 2 === 0) : years).tickFormat(d3.format('d')),
         h, m);
+
+      svg.append('text').attr('transform', `translate(11,${(m.top + h - m.bottom) / 2}) rotate(-90)`)
+        .attr('text-anchor', 'middle').attr('font-size', narrow ? 10.5 : 11.5).attr('fill', '#62594f')
+        .text(narrow ? 'Points (lower is better)' : 'Team points (lower is better)');
+
+      const first = series[0], last = series[series.length - 1];
+
+      // shaded "medal zone" between the gold and bronze lines, broken where there was no race
+      if (o.band !== false && series.length > 1) {
+        const segs = [];
+        let cur = [];
+        years.forEach((yr, i) => {
+          if (first.values[i] && last.values[i]) cur.push(i);
+          else { if (cur.length > 1) segs.push(cur); cur = []; }
+        });
+        if (cur.length > 1) segs.push(cur);
+        segs.forEach(idx => svg.append('path').datum(idx)
+          .attr('d', d3.area().x(i => x(years[i])).y0(i => y(first.values[i].pts)).y1(i => y(last.values[i].pts)))
+          .attr('fill', first.color).attr('fill-opacity', 0.1));
+      }
 
       years.forEach((yr, i) => {
         if (series.every(s => !s.values[i])) {
@@ -224,17 +301,52 @@ const RTN = (() => {
         }
       });
 
+      // dashed averages for the winning and bronze-medal scores (the figures the article quotes)
+      if (o.averages !== false && series.length > 1) {
+        [first, last].forEach(s => {
+          const vals = s.values.filter(Boolean).map(v => v.pts);
+          if (!vals.length) return;
+          const avg = d3.mean(vals), ay = y(avg);
+          svg.append('line').attr('x1', m.left).attr('x2', w - m.right).attr('y1', ay).attr('y2', ay)
+            .attr('stroke', s.color).attr('stroke-width', 1.2).attr('stroke-dasharray', '4 3').attr('opacity', 0.85);
+          svg.append('text').attr('x', m.left + 4).attr('y', ay - 4)
+            .attr('font-size', narrow ? 9.5 : 10.5).attr('font-weight', 600).attr('fill', '#62594f')
+            .style('paint-order', 'stroke').style('stroke', '#fffdf8').style('stroke-width', '3px')
+            .text(`${narrow ? 'Avg ' : 'Average '}${String(s.name).toLowerCase()}: ${Math.round(avg)}`);
+        });
+      }
+
       const line = d3.line().defined(v => v).x((v, i) => x(years[i])).y(v => y(v.pts));
       series.forEach(s => svg.append('path').attr('d', line(s.values)).attr('fill', 'none')
-        .attr('stroke', s.color).attr('stroke-width', 2).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round'));
+        .attr('stroke', s.color).attr('stroke-width', 2.4).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round'));
 
       const pts = series.flatMap(s => s.values.map((v, i) => (v ? { s, v, i } : null)).filter(Boolean));
       const dots = svg.append('g').selectAll('circle').data(pts).join('circle')
         .attr('cx', d => x(years[d.i])).attr('cy', d => y(d.v.pts)).attr('r', 4)
         .attr('fill', d => d.s.color).attr('stroke', '#fffdf8').attr('stroke-width', 2);
 
+      // direct labels at the end of each line, nudged apart where they would collide
+      const ends = series.map(s => {
+        const i = s.values.map(Boolean).lastIndexOf(true);
+        return i < 0 ? null : { s, px: x(years[i]), yy: y(s.values[i].pts) };
+      }).filter(Boolean).sort((a, b) => b.yy - a.yy);
+      for (let k = 1; k < ends.length; k++) ends[k].yy = Math.min(ends[k].yy, ends[k - 1].yy - 12);
+      ends.forEach(e => svg.append('text').attr('x', e.px + 9).attr('y', e.yy + 3.5)
+        .attr('font-size', narrow ? 9.5 : 10.5).attr('font-weight', 600).attr('fill', '#62594f').text(e.s.name));
+
+      // optional labels for particular points, e.g. the lowest winning score
+      (o.notes || []).forEach(n => {
+        const s = series[n.series || 0], i = years.indexOf(n.year), v = s && s.values[i];
+        if (!v) return;
+        svg.append('text').attr('x', x(n.year) + (n.dx || 0)).attr('y', y(v.pts) + (n.dy == null ? -12 : n.dy))
+          .attr('text-anchor', n.anchor || 'middle').attr('font-size', narrow ? 9.5 : 10.5).attr('font-weight', 700)
+          .attr('fill', '#2a2521').style('paint-order', 'stroke').style('stroke', '#fffdf8').style('stroke-width', '3px')
+          .text(n.text);
+      });
+
       const vline = svg.append('line').attr('y1', m.top).attr('y2', h - m.bottom)
         .attr('stroke', '#2a2521').attr('stroke-opacity', 0.25).style('display', 'none');
+      clear = () => { vline.style('display', 'none'); dots.attr('r', 4); hideTip(); };
       const move = event => {
         const [px] = d3.pointer(event);
         const i = d3.minIndex(years, yr => Math.abs(x(yr) - px));
@@ -249,7 +361,7 @@ const RTN = (() => {
       svg.append('rect').attr('x', m.left).attr('y', m.top).attr('width', w - m.left - m.right)
         .attr('height', h - m.top - m.bottom).attr('fill', 'transparent')
         .on('pointerdown pointermove', move)
-        .on('pointerleave', () => { vline.style('display', 'none'); dots.attr('r', 4); hideTip(); });
+        .on('pointerleave', event => { if (event.pointerType === 'mouse') clear(); });
 
       tableView(el, ['Year', ...series.map(s => s.name)], years.map((yr, i) => [
         yr, ...series.map(s => (s.values[i] ? `${s.values[i].pts} · ${s.values[i].club}` : 'no race'))
@@ -259,6 +371,9 @@ const RTN = (() => {
 
 
 function positionGrid(el, years, clubs, cats) {
+  d3.select(document).on('pointerdown.posgrid', e => {
+    if (!e.target.closest('.pos-grid td')) hideTip();
+  });
   const shade = d3.scaleLinear()
     .domain([1, 3, 8, 18])
     .range(['#8f2a14', '#c4553a', '#f0bfa8', '#f9ece3'])
@@ -269,15 +384,11 @@ function positionGrid(el, years, clubs, cats) {
   // Completely clear the container before rendering
   el.replaceChildren();
 
-  const scroll = d3.select(el)
-    .append('div')
-    .attr('class', 'pos-grid-scroll');
-
-  const table = scroll
-    .append('table')
-    .attr('class', 'pos-grid');
-
-  // Table body
+  const scroll = d3.select(el).append('div').attr('class', 'pos-grid-scroll');
+  const table = scroll.append('table').attr('class', 'pos-grid');
+    const cols = table.append('colgroup');
+  cols.append('col').attr('class', 'col-club');
+  years.forEach(() => cols.append('col'));
   const body = table.append('tbody');
 
   cats.forEach(cat => {
@@ -320,7 +431,8 @@ function positionGrid(el, years, clubs, cats) {
               event
             )
           )
-          .on('pointerleave', hideTip);
+
+                    .on('pointerleave', event => { if (event.pointerType === 'mouse') hideTip(); })
       });
     });
   });
@@ -334,13 +446,11 @@ function positionGrid(el, years, clubs, cats) {
     .text('Year');
 
   years.forEach(yr => {
-    row.append('th')
-      .attr('scope', 'col')
-      .text(yr);
+    const th = row.append('th').attr('scope', 'col');
+    th.append('span').attr('class', 'y-full').text(yr);
+    th.append('span').attr('class', 'y-short').text('’' + String(yr).slice(-2));
   });
 }
-
-
 
 
 

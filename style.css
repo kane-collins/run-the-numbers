@@ -281,7 +281,7 @@ svg text { font-family: var(--sans); }
   flex-direction: column;
   gap: 32px;
 }
-
+/*
 .pos-grid-scroll {
   width: 100%;
   overflow-x: auto;
@@ -362,7 +362,120 @@ svg text { font-family: var(--sans); }
 @media (max-width: 640px) {
   .pos-grid {
     min-width: 620px;
+  }*/
+
+.pos-grid-scroll {
+  width: 100%;
+  overflow-x: auto;                 /* safety net only; the table should now fit */
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 4px 6px 8px;
+}
+
+.pos-grid {
+  width: 100%;
+  table-layout: fixed;              /* cells share the width equally instead of growing */
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.pos-grid th.club {
+  width: 118px;
+  text-align: right;
+  padding: 0 8px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: normal;              /* long club names wrap instead of widening the table */
+}
+
+.pos-grid td {
+  padding: 7px 0;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  border-radius: 3px;
+}
+
+.pos-grid td.empty { background: #faf6ef; color: #c8beb1; }
+.pos-grid td.podium { font-weight: 700; }
+
+.pos-grid .grp th {
+  background: #eee5d8;
+  color: var(--accent);
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 4px;
+}
+
+.pos-grid tfoot th {
+  padding-top: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.pos-grid tfoot th:first-child { text-align: right; padding-right: 8px; }
+
+.pos-grid .y-short { display: none; }
+
+@media (max-width: 560px) {
+  .pos-grid th.club { width: 84px; font-size: 11px; padding-right: 6px; }
+  .pos-grid td { padding: 6px 0; font-size: 10.5px; }
+  .pos-grid .y-full { display: none; }
+  .pos-grid .y-short { display: inline; }
+}
+
+.pos-grid .y-short { display: none; }
+
+@media (max-width: 560px) {
+  .pos-grid .y-full  { display: none; }
+  .pos-grid .y-short { display: inline; }
+}
+
+@media (max-width: 560px) {
+  .pos-grid-scroll { padding: 3px 4px 6px; }
+
+  .pos-grid {
+    min-width: 0;
+    table-layout: fixed;
+    border-spacing: 1px;
   }
+
+  .pos-grid .col-club { width: 32%; }   /* more room for names; the 9 year columns share the rest */
+
+  .pos-grid th.club {
+    min-width: 0;                 /* cancels the old min-width: 125px */
+    padding: 0 5px 0 4px;
+    font-size: 10.5px;
+    line-height: 1.15;
+    white-space: normal;          /* lets "Ennis Track" wrap onto two lines */
+  }
+
+  .pos-grid td {
+    padding: 4px 0;
+    font-size: 9px;
+    border-radius: 2px;
+  }
+
+  .pos-grid .grp th {
+    padding: 8px 10px;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+  }
+
+  .pos-grid tfoot th { font-size: 9px; padding-top: 4px; }
+  .pos-grid tfoot th:first-child { padding-left: 0; padding-right: 5px; text-align: right; }
+
+  .pos-grid .y-full  { display: none; }
+  .pos-grid .y-short { display: inline; }
+}
+
 
 /* ---------- Responsive year labels ---------- */
 
@@ -523,3 +636,13 @@ svg text { font-family: var(--sans); }
 .series-link.next:hover .series-arrow { transform: translateX(4px); }
 .series-link.prev:hover .series-arrow { transform: translateX(-4px); }
 .series-link.prev { flex-direction: row-reverse; justify-content: flex-end; }
+
+@media (max-width: 560px) {
+  .site-footer .inner {
+    flex-direction: column;     /* stack the copyright above the Instagram link */
+    align-items: center;        /* centre each item horizontally */
+    justify-content: center;
+    text-align: center;
+    gap: 10px;
+  }
+}
