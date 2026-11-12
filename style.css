@@ -646,3 +646,36 @@ svg text { font-family: var(--sans); }
     gap: 10px;
   }
 }
+
+/* The chart block: reads as its own unit, separate from the article text */
+.chart-block {
+  margin: 2.5rem 0;
+  padding: 20px 20px 16px;
+  background: #fffdf8;
+  border: 1px solid #e7dfd2;
+  border-top: 3px solid #2d2823;      /* heavy top rule marks the start of a chart */
+  border-radius: 6px;
+}
+
+/* Heading: label-style, sans-serif, tight and bold */
+.chart-block .chart-title {
+  margin: 0 0 4px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: #2d2823;
+}
+
+/* Subtitle: smaller, grey, and set apart from the body text */
+.chart-block .chart-sub {
+  margin: 0 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e7dfd2;   /* thin rule between the header and the chart */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #74695e;
+}

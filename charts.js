@@ -241,8 +241,6 @@ const RTN = (() => {
           .on('blur', off);
       });
 
-      tableView(el, ['Club', 'Gold', 'Silver', 'Bronze', 'Total'],
-        items.map(d => [d.full, d.gold, d.silver, d.bronze, totalOf(d)]));
     });
   }
 
@@ -363,9 +361,6 @@ const RTN = (() => {
         .on('pointerdown pointermove', move)
         .on('pointerleave', event => { if (event.pointerType === 'mouse') clear(); });
 
-      tableView(el, ['Year', ...series.map(s => s.name)], years.map((yr, i) => [
-        yr, ...series.map(s => (s.values[i] ? `${s.values[i].pts} · ${s.values[i].club}` : 'no race'))
-      ]));
     });
   }
 

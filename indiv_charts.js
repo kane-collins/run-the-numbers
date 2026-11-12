@@ -292,7 +292,7 @@
         const ox = narrow ? axisW : axisW + si * (panelW + gap);
         const oy = narrow ? si * rowBlock : 0;
         const g = svg.append("g").attr("transform", `translate(${ox},${oy + stripH})`);
-        const x = d3.scaleLinear().domain([2016, 2025]).range([10, panelW - labelPad]);
+        const x = d3.scalePoint().domain(years).range([10, panelW - labelPad]);
         const base = BASE[sex];
         const lineColor = p => d3.interpolateRgb("#ffffff", base)(TINT[p]);
         const val = (yr, k) => data[sex][yr][k];
@@ -321,13 +321,12 @@
           g.append("text").attr("x", x(yr)).attr("y", panelH + 16).attr("text-anchor", "middle")
             .attr("font-size", narrow ? 10 : 11).attr("fill", "#74695e").text(String(yr).slice(-2));
         });
-        g.append("text").attr("x", x(2020)).attr("y", panelH + 16).attr("text-anchor", "middle")
-          .attr("font-size", 9).attr("font-style", "italic").attr("fill", "#a09585").text("no race");
 
         // race-length marker
         const rc = RACE_CHANGE[sex];
         if (rc) {
-          const rx = x(rc.year - 0.5);
+          const ri = years.indexOf(rc.year);
+            const rx = (x(years[ri - 1]) + x(years[ri])) / 2;
           g.append("line").attr("x1", rx).attr("x2", rx).attr("y1", 6).attr("y2", panelH)
             .attr("stroke", "#8a7d6e").attr("stroke-width", 1).attr("stroke-dasharray", "3 3");
           g.append("text").attr("x", rx - 5).attr("y", 16).attr("text-anchor", "end")
@@ -548,11 +547,14 @@
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 560, pad = narrow ? 10 : 16;
-      const labelW = narrow ? Math.min(112, width * 0.33) : 140;
-      const rowH = narrow ? 28 : 30, stripH = 26, hdrH = 24, axisH = 24, blockGap = 16;
+      const labelW = narrow ? Math.min(60, width * 0.22) : 140;
+      const rowH = narrow ? 32 : 30, stripH = 26, hdrH = 24, axisH = 24, blockGap = 16;
       const x0 = pad + labelW + 10, x1 = width - pad - 10;
-      const x = d3.scaleLinear().domain([2007, 2026]).range([x0, x1]);
-      const ticks = [2010, 2015, 2020, 2025];
+      const early = 0.27;   // share of the width given to 2007–2015 (it would be 0.42 on an even scale)
+        const x = d3.scaleLinear()
+          .domain([2007, 2015, 2026])
+          .range([x0, x0 + (x1 - x0) * early, x1]);
+              const ticks = [2010, 2015, 2020, 2025];
 
       // lay out each panel: strip title, then group headers and rows
       const panels = sexes.map(sex => {
@@ -601,21 +603,38 @@
           const d = it.d, cy = y + rowH / 2;
           const g = svg.append("g");
 
-          g.append("text").attr("x", pad + labelW).attr("y", cy + 3.5).attr("text-anchor", "end")
-            .attr("font-size", narrow ? 10.5 : 11.5).attr("fill", "#62594f").text(d.name);
+        const nameEl = g.append("text").attr("text-anchor", "end")
+          .attr("font-size", narrow ? 10 : 11.5).attr("fill", "#62594f");
+        const sp = d.name.lastIndexOf(" ");
+        const parts = narrow && sp > 0 ? [d.name.slice(0, sp), d.name.slice(sp + 1)] : [d.name];
+        parts.forEach((p, i) => nameEl.append("tspan")
+          .attr("x", pad + labelW)
+          .attr("y", cy + 3.5 - (parts.length - 1) * 5.5 + i * 11)
+          .text(p));
           g.append("line").attr("x1", x0).attr("x2", x1).attr("y1", cy).attr("y2", cy).attr("stroke", "#efe8dc");
 
-          // XC title rings (drawn first so other-title dots sit inside them)
-          d.xc.forEach(yr => {
-            g.append("circle").attr("cx", x(yr)).attr("cy", cy).attr("r", 8.2)
-              .attr("fill", "#fff").attr("stroke", INK).attr("stroke-width", 2);
-            g.append("text").attr("x", x(yr) + 12).attr("y", cy + 3).attr("font-size", 9)
-              .attr("fill", INK).attr("font-weight", 600).text("’" + String(yr).slice(-2));
-          });
+// XC title rings (drawn first so other-title dots sit inside them)
+const R = narrow ? 6.5 : 8.2;
+const yy = s => "’" + String(s).slice(-2);
+let lab = null, labFirst = 0, labX0 = 0, prevX = -Infinity;
+d.xc.slice().sort((a, b) => a - b).forEach(yr => {
+  const cx = x(yr);
+  g.append("circle").attr("cx", cx).attr("cy", cy).attr("r", R)
+    .attr("fill", "#fff").attr("stroke", INK).attr("stroke-width", 2);
+  if (lab && cx - prevX < (narrow ? 20 : 24)) {
+    // close to the previous win: extend its label into a range, centred over the run
+    lab.attr("x", (labX0 + cx) / 2).text(yy(labFirst) + "–" + yy(yr));
+  } else {
+    lab = g.append("text").attr("x", cx).attr("y", cy - R - 2).attr("text-anchor", "middle")
+      .attr("font-size", narrow ? 8.5 : 9).attr("fill", INK).attr("font-weight", 600).text(yy(yr));
+    labFirst = yr; labX0 = cx;
+  }
+  prevX = cx;
+});
           // other national titles
           EVENTS.forEach(([ev, color]) => {
             (d.titles[ev] || []).forEach(yr => {
-              g.append("circle").attr("cx", x(yr)).attr("cy", cy).attr("r", 4.6).attr("fill", color);
+              g.append("circle").attr("cx", x(yr)).attr("cy", cy).attr("r", narrow ? 3.5 : 4.6).attr("fill", color);
             });
           });
 
@@ -811,11 +830,11 @@
       el.innerHTML = "";
       const narrow = width < 560, pad = narrow ? 10 : 16;
       const labelW = narrow ? Math.min(98, width * 0.27) : 132;
-      const leftLab = narrow ? 44 : 64, rightLab = narrow ? 44 : 66, gainW = narrow ? 40 : 58;
+      const leftLab = narrow ? 34 : 64, rightLab = narrow ? 34 : 66, gainW = narrow ? 40 : 58;
       const rowH = narrow ? 26 : 28, stripH = 26, tickH = 20, blockGap = 14, titleH = 28;
       const x0 = pad + labelW + leftLab, x1 = width - pad - rightLab - gainW;
       const x = d3.scaleLinear().domain([1.03, 0]).range([x0, x1]);   // better finishes to the right
-      const ticks = [1, 0.75, 0.5, 0.25, 0];
+      const ticks = narrow ? [1, 0.5, 0] : [1, 0.75, 0.5, 0.25, 0];
 
       const blocks = sexes.map(s => ({ sex: s, h: stripH + rowsBySex[s].length * rowH + tickH }));
       const height = blocks.reduce((s, b) => s + b.h, 0) + blockGap * (blocks.length - 1) + titleH;
@@ -825,7 +844,7 @@
         .attr("role", "group")
         .attr("aria-label", options.aria || "For each athlete, their debut and best finishing positions at the National Cross Country Championships, as a share of the field");
 
-      const lab = (p, yr) => narrow ? `#${p} ’${String(yr).slice(-2)}` : `#${p} (${yr})`;
+      const lab = (p, yr) => narrow ? `#${p}` : `#${p} (${yr})`;
 
       let oy = 0;
       blocks.forEach(({ sex, h }) => {
@@ -893,7 +912,7 @@
 
       svg.append("text").attr("x", (x0 + x1) / 2).attr("y", height - 6).attr("text-anchor", "middle")
         .attr("font-size", narrow ? 11 : 12).attr("fill", "#62594f")
-        .text("Finishing position in the field (top x%; better to the right)");
+        .text(narrow ? "Place in field (top x%; better to the right)" : "Finishing position in the field (top x%; better to the right)");
     });
   }
 
