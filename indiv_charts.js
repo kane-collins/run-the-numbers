@@ -15,7 +15,7 @@
       el.innerHTML = "";
       const narrow = avail < 560, pad = narrow ? 12 : 16;
 
-    const labelW = narrow ? 93 : 130;
+    const labelW = narrow ? 110 : 130;
       const noteW = narrow ? 0 : 88;
       const R = narrow ? 7 : 8.2;             // coin radius
       const rowH = narrow ? 32 : 36, top = 30;

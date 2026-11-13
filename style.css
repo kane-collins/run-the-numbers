@@ -679,3 +679,18 @@ svg text { font-family: var(--sans); }
   line-height: 1.45;
   color: #74695e;
 }
+
+.wrap.hero {
+  max-width: none;               /* ignore the content-width cap */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 72px 24px 48px;
+}
+.wrap.hero h1,
+.wrap.hero p {
+  max-width: none;
+  width: 100%;
+  text-align: center;
+}
