@@ -14,7 +14,8 @@
     RTN.responsive(el, avail => {
       el.innerHTML = "";
       const narrow = avail < 560, pad = narrow ? 12 : 16;
-      const labelW = narrow ? Math.min(116, avail * 0.36) : 132;
+
+    const labelW = narrow ? 93 : 130;
       const noteW = narrow ? 0 : 88;
       const R = narrow ? 7 : 8.2;             // coin radius
       const rowH = narrow ? 32 : 36, top = 30;
@@ -61,7 +62,7 @@
       const names = svg.append("g").selectAll("text").data(data).join("text")
         .attr("x", left - 9).attr("y", (d, i) => top + i * rowH + rowH / 2 + 3.5)
         .attr("text-anchor", "end").attr("fill", "#62594f")
-        .attr("font-size", narrow ? 10.5 : 11.5).text(d => d.name);
+        .attr("font-size", narrow ? 10 : 11.5).text(d => d.name);
 
       const groups = svg.append("g").selectAll("g.athlete").data(data).join("g").attr("class", "athlete");
       groups.each(function (d, i) {
@@ -147,9 +148,17 @@
 
     RTN.responsive(el, width => {
       el.innerHTML = "";
-      const narrow = width < 560, pad = narrow ? 10 : 16;
-      const labelW = narrow ? Math.min(116, width * 0.36) : 232;
-      const noteW = narrow ? 44 : 150;
+const narrow = width < 560, pad = narrow ? 5 : 16;
+const labelOf = d => narrow
+  ? `’${String(d.year).slice(-2)} ${d.winner.split(" ").pop()}`
+  : `${d.year} ${d.gender}: ${d.winner}`;
+// measure the real label widths rather than estimating
+const probe = d3.select(el).append("svg").style("position", "absolute").style("visibility", "hidden");
+const textW = d3.max(data, d => probe.append("text")
+  .attr("font-size", narrow ? 10.5 : 11.5).text(labelOf(d)).node().getComputedTextLength());
+probe.remove();
+const labelW = Math.ceil(textW || d3.max(data, d => labelOf(d).length) * 4) + 5;
+const noteW = narrow ? 32 : 48;
       const rowH = narrow ? 26 : 25, top = narrow ? 24 : 26, axisH = 46;
       const left = pad + labelW, right = width - pad - noteW;
       const height = top + data.length * rowH + axisH;
@@ -193,22 +202,23 @@
           .attr("font-size", narrow ? 9.5 : 10.5).attr("font-weight", 600).attr("fill", color).text(label);
       });
 
-      const rows = svg.append("g").selectAll("g.row").data(data).join("g").attr("class", "row");
+              const rows = svg.append("g").selectAll("g.row").data(data).join("g").attr("class", "row");
       rows.each(function (d, i) {
         const g = d3.select(this), y = top + i * rowH + rowH / 2, color = COLORS[d.gender];
-        const label = narrow
-          ? `’${String(d.year).slice(-2)} ${d.winner.split(" ").pop()}`
-          : `${d.year} ${d.gender}: ${d.winner}`;
-
         const nameEl = g.append("text").attr("x", left - 9).attr("y", y + 3.5).attr("text-anchor", "end")
-          .attr("fill", "#62594f").attr("font-size", narrow ? 10.5 : 11.5).text(label);
+          .attr("fill", "#62594f").attr("font-size", narrow ? 10.5 : 11.5).text(labelOf(d));
         g.append("line").attr("x1", x(0)).attr("x2", x(d.margin)).attr("y1", y).attr("y2", y)
           .attr("stroke", color).attr("stroke-width", 2.2).attr("stroke-linecap", "round");
         g.append("circle").attr("cx", x(d.margin)).attr("cy", y).attr("r", 4.8).attr("fill", color);
 
-        // the margin itself in bold, the runner-up in grey
-        const note = g.append("text").attr("x", x(d.margin) + 9).attr("y", y + 3.2)
+        // the margin in bold, the runner-up in grey; a note that would run off the edge sits left of the dot instead
+        const txt = narrow ? fmt(d.margin) : `${fmt(d.margin)} ahead of ${d.runnerUp}`;
+        const inside = x(d.margin) + 9 + txt.length * 5.4 > width - pad;
+        const note = g.append("text")
+          .attr("x", inside ? x(d.margin) - 9 : x(d.margin) + 9).attr("y", y + 3.2)
+          .attr("text-anchor", inside ? "end" : "start")
           .attr("font-size", narrow ? 9 : 10).attr("fill", "#74695e");
+        if (inside) note.style("paint-order", "stroke").style("stroke", "#fffdf8").style("stroke-width", "3px");
         note.append("tspan").attr("font-weight", 700).attr("fill", "#2d2823").text(fmt(d.margin));
         if (!narrow) note.append("tspan").text(` ahead of ${d.runnerUp}`);
 
@@ -447,7 +457,7 @@
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 640, pad = narrow ? 10 : 16, gap = narrow ? 0 : 20;
-      const labelW = narrow ? Math.min(108, width * 0.3) : 122;
+      const labelW = narrow ? 80 : 130;
       const panelW = narrow ? width - pad * 2 : (width - pad * 2 - gap) / 2;
       const rowH = narrow ? 24 : 25, stripH = 24, axisH = 22, blockGap = 14, titleH = 30;
       const blockH = stripH + maxN * rowH + axisH;
@@ -469,7 +479,7 @@
         const top = oy + stripH, bottom = top + rows.length * rowH;
 
         svg.append("text").attr("x", (x0 + x1) / 2).attr("y", oy + 15).attr("text-anchor", "middle")
-          .attr("font-weight", 600).attr("font-size", narrow ? 12 : 13).attr("fill", "#2d2823").text(sex);
+          .attr("font-weight", 600).attr("font-size", narrow ? 11 : 13).attr("fill", "#2d2823").text(sex);
 
         ticks.forEach(t => {
           svg.append("line").attr("x1", x(t)).attr("x2", x(t)).attr("y1", top).attr("y2", bottom)
@@ -482,7 +492,7 @@
           const y = top + i * rowH + rowH / 2;
           const g = svg.append("g");
           g.append("text").attr("x", ox + labelW).attr("y", y + 3.5).attr("text-anchor", "end")
-            .attr("font-size", narrow ? 10.5 : 11.5).attr("fill", "#62594f").text(d.name);
+            .attr("font-size", narrow ? 9.5 : 11.5).attr("fill", "#62594f").text(d.name);
           g.append("rect").attr("x", x(d.best) - 3).attr("y", y - 4.5)
             .attr("width", Math.max(0, x(d.worst) - x(d.best)) + 6).attr("height", 9).attr("rx", 4.5)
             .attr("fill", "#d9d5ce");
@@ -957,8 +967,9 @@ d.xc.slice().sort((a, b) => a - b).forEach(yr => {
     RTN.responsive(el, width => {
       el.innerHTML = "";
       const narrow = width < 520, side = width >= 840, pad = narrow ? 10 : 16, gap = 28;
-      const labelW = narrow ? Math.min(104, width * 0.29) : 128;
-      const rowH = narrow ? 23 : 26, stripH = 26, axisH = 22, blockGap = 14, yearGap = 8;
+const labelW = narrow ? Math.min(74, width * 0.22) : 128;
+const rowH = narrow ? 26 : 26, stripH = 26, axisH = 22, blockGap = 14;
+const yearGap = narrow ? 0 : 8;          // no gap before 2021 on mobile
       const panelW = side ? (width - pad * 2 - gap) / 2 : width - pad * 2;
       const cw = (panelW - labelW - yearGap) / nCols;
 
@@ -990,8 +1001,14 @@ d.xc.slice().sort((a, b) => a - b).forEach(yr => {
 
         rows.forEach(([name, finishes], r) => {
           const y = top + r * rowH, count = finishes.filter(v => v != null).length;
-          const label = svg.append("text").attr("x", ox + labelW - 8).attr("y", y + rowH / 2 + 3.5).attr("text-anchor", "end")
-            .attr("font-size", narrow ? 10.5 : 11.5).attr("fill", "#62594f").text(name);
+const label = svg.append("text").attr("text-anchor", "end")
+  .attr("font-size", narrow ? 10 : 11.5).attr("fill", "#62594f");
+const sp = name.lastIndexOf(" ");
+const parts = narrow && sp > 0 ? [name.slice(0, sp), name.slice(sp + 1)] : [name];
+parts.forEach((p, i) => label.append("tspan")
+  .attr("x", ox + labelW - 8)
+  .attr("y", y + rowH / 2 + 3.5 - (parts.length - 1) * 5 + i * 10)
+  .text(p));
 
           finishes.forEach((pos, i) => {
             if (pos == null) return;
@@ -999,10 +1016,10 @@ d.xc.slice().sort((a, b) => a - b).forEach(yr => {
             const rect = g.append("rect").attr("x", cx(i) + 1).attr("y", y + 1).attr("width", cw - 2).attr("height", rowH - 2)
               .attr("rx", 2).attr("fill", b.fill).attr("tabindex", 0).attr("role", "img")
               .attr("aria-label", `${name}, ${years[i]}: ${ordinal(pos)}`);
-            if (cw >= 20) {
-              g.append("text").attr("x", cx(i) + cw / 2).attr("y", y + rowH / 2 + 3.5).attr("text-anchor", "middle")
-                .attr("font-size", narrow ? 9 : 10).attr("fill", b.text).attr("pointer-events", "none").text(pos);
-            }
+if (cw >= 14) {
+  g.append("text").attr("x", cx(i) + cw / 2).attr("y", y + rowH / 2 + 3.5).attr("text-anchor", "middle")
+    .attr("font-size", cw >= 24 ? (narrow ? 9 : 10) : 8).attr("fill", b.text).attr("pointer-events", "none").text(pos);
+}
             const html = `<strong>${name}</strong><br>${years[i]}: ${ordinal(pos)}${pos <= 3 ? " (podium)" : ""}<br>` +
               `${count} of ${nCols} championships`;
             const tip = event => { label.attr("font-weight", 700).attr("fill", INK); RTN.showTip(html, event); };

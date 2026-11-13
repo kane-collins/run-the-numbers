@@ -140,18 +140,11 @@ const RTN = (() => {
       r.forEach((cell, i) => tr.append(i === 0 ? 'th' : 'td').attr('scope', i === 0 ? 'row' : null).text(cell));
     });
   }
-
-/* ---------- Medal table: one coin per medal ----------
-     items = [{club, full, gold, silver, bronze, years: {gold: [], silver: [], bronze: []}}]
-     Drop-in replacement for the old stacked-bar medalBars(): same name, same arguments. */
   function medalBars(el, items, o = {}) {
     const keys = ['gold', 'silver', 'bronze'];
-    const SHOW_LETTERS = false;
     const names = { gold: 'Gold', silver: 'Silver', bronze: 'Bronze' };
-    const letters = { gold: 'G', silver: 'S', bronze: 'B' };
     // Default colours match the individual medal table; anything passed in o.colors overrides them.
     const colors = Object.assign({ gold: '#d6a21e', silver: '#a9adb3', bronze: '#b0673b' }, o.colors || {});
-    const inkFor = c => (d3.lab(c).l > 58 ? '#3a3027' : '#ffffff');   // letter colour that stays readable on each coin
     const totalOf = d => d.gold + d.silver + d.bronze;
     const yearsOf = (d, k) => ((d.years && d.years[k]) || []).slice().sort((a, b) => a - b);
 
@@ -159,21 +152,25 @@ const RTN = (() => {
       el.innerHTML = '';
       const narrow = w < 440;
       const maxT = d3.max(items, totalOf) || 1;
-      const nameW = narrow ? 96 : 118, totalW = 34, padR = 8;
-      const rowH = narrow ? 32 : 36, top = 22, bottom = 6;
-      const yearW = narrow ? 17 : 21;                       // width reserved for each ’23 label
+      const nameW = narrow ? 96 : 118, totalW = 34, padR = 8, top = 22, bottom = 6;
       let R = narrow ? 7 : 8.2;                             // coin radius
 
-      // Use year labels when the longest row fits; otherwise pack the coins tighter and leave the years to the tooltip.
+      // Years sit beside each coin when the longest row fits; otherwise they drop underneath so no medal loses its year.
       const avail = w - nameW - totalW - padR - 8;
-      const slotWithYears = narrow ? 38 : 48;
-      const showYears = maxT * slotWithYears <= avail;
-      let slot = slotWithYears;
-      if (!showYears) {
-        slot = Math.min(2 * R + 5, avail / maxT);
-        if (slot < 2 * R + 1) R = Math.max(4, slot / 2 - 1);
+      const slotInline = narrow ? 38 : 48;
+      const inline = maxT * slotInline <= avail;
+      let slot = slotInline, yearFont = narrow ? 9 : 10, showYears = true;
+      if (!inline) {
+        slot = Math.min(narrow ? 24 : 28, avail / maxT);
+        if (slot < 2 * R + 2) R = Math.max(4, slot / 2 - 1);
+        if (slot < 20) yearFont = 8;
+        showYears = slot >= 15;                             // below this the labels would collide; the tooltip still has them
       }
-      const W = Math.min(w, nameW + maxT * slot + 8 + totalW + padR);   // size to the content, never a wide empty track
+      const below = !inline && showYears;
+      const rowH = (narrow ? 32 : 36) + (below ? 10 : 0);
+      const cy = below ? rowH / 2 - 5 : rowH / 2;           // centre line of the coins
+
+      const W = Math.min(w, nameW + maxT * slot + 8 + totalW + padR);
       const h = top + rowH * items.length + bottom;
       const svg = makeSvg(el, W, h, o.aria || 'Medal table');
       d3.select(el).select('svg').style('width', W + 'px').style('max-width', '100%')
@@ -192,10 +189,10 @@ const RTN = (() => {
       const bgs = rows.append('rect').attr('x', 0).attr('y', 1).attr('width', W).attr('height', rowH - 2)
         .attr('rx', 6).attr('fill', '#f1e9dc').attr('opacity', 0);
 
-      rows.append('line').attr('x1', nameW).attr('x2', totalX - 22).attr('y1', rowH / 2).attr('y2', rowH / 2)
+      rows.append('line').attr('x1', nameW).attr('x2', totalX - 22).attr('y1', cy).attr('y2', cy)
         .attr('stroke', '#e7dfd2');
 
-      const nameEls = rows.append('text').attr('x', nameW - 10).attr('y', rowH / 2 + 4).attr('text-anchor', 'end')
+      const nameEls = rows.append('text').attr('x', nameW - 10).attr('y', cy + 4).attr('text-anchor', 'end')
         .attr('font-size', narrow ? 11.5 : 12.5).attr('fill', '#2a2521').text(d => d.club);
 
       rows.each(function (d) {
@@ -205,20 +202,17 @@ const RTN = (() => {
           const yrs = yearsOf(d, k);
           for (let j = 0; j < d[k]; j++) {
             const cx = x0 + n * slot;
-            g.append('circle').attr('cx', cx).attr('cy', rowH / 2).attr('r', R).attr('fill', colors[k]);
-            if (SHOW_LETTERS && R >= 6.5) {
-              g.append('text').attr('x', cx).attr('y', rowH / 2 + (R >= 8 ? 3.2 : 2.8)).attr('text-anchor', 'middle')
-                .attr('font-size', R >= 8 ? 9 : 8).attr('font-weight', 700).attr('fill', inkFor(colors[k]))
-                .attr('pointer-events', 'none').text(letters[k]);
-            }
+            g.append('circle').attr('cx', cx).attr('cy', cy).attr('r', R).attr('fill', colors[k]);
             if (showYears && yrs[j] != null) {
-              g.append('text').attr('x', cx + R + 3).attr('y', rowH / 2 + 3.5).attr('font-size', narrow ? 9 : 10)
-                .attr('fill', '#62594f').attr('pointer-events', 'none').text('’' + String(yrs[j]).slice(-2));
+              const t = g.append('text').attr('font-size', yearFont).attr('fill', '#62594f')
+                .attr('pointer-events', 'none').text('’' + String(yrs[j]).slice(-2));
+              if (below) t.attr('x', cx).attr('y', cy + R + 10).attr('text-anchor', 'middle');
+              else t.attr('x', cx + R + 3).attr('y', cy + 3.5);
             }
             n++;
           }
         });
-        g.append('text').attr('x', totalX).attr('y', rowH / 2 + 4.5).attr('text-anchor', 'end')
+        g.append('text').attr('x', totalX).attr('y', cy + 4.5).attr('text-anchor', 'end')
           .attr('font-size', 13).attr('font-weight', 700).attr('fill', '#2a2521').text(n);
       });
 
@@ -240,7 +234,6 @@ const RTN = (() => {
           .on('focus', () => { const r = hit.node().getBoundingClientRect(); tip({ clientX: r.left + r.width / 2, clientY: r.top }); })
           .on('blur', off);
       });
-
     });
   }
 
